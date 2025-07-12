@@ -1,0 +1,43 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+backend/venv/
+
+# Environment variables
+.env
+*.env
+
+# Uploads and media
+uploads/
+*.mp4
+*.mov
+*.avi
+*.jpg
+*.png
+
+# Logs
+*.log
+logs/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Node modules (for future frontend)
+node_modules/
+npm-debug.log*
+package-lock.json
+
+# Build files
+dist/
+build/ 
