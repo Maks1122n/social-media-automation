@@ -7,4 +7,8 @@ webdriver-manager==4.0.1
 python-dotenv==1.0.0
 aiofiles==23.2.1
 pydantic==1.10.13
+<<<<<<< HEAD
 gunicorn==21.2.0 
+=======
+gunicorn==21.2.0 
+>>>>>>> dd3996b (fix: set pydantic==1.10.13 for Render)
