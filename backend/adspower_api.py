@@ -8,7 +8,8 @@ router = APIRouter(prefix="/api/adspower", tags=["adspower"])
 class ProfileCreate(BaseModel):
     name: str
 
-    model_config = {"extra": "allow"}
+    class Config:
+        extra = "allow"
 
 @router.get("/test")
 async def test_adspower() -> Dict[str, Any]:
@@ -24,7 +25,7 @@ async def test_adspower() -> Dict[str, Any]:
 @router.post("/create-profile")
 async def create_profile(profile_data: ProfileCreate) -> Dict[str, Any]:
     service = AdsPowerService()
-    result = await service.create_profile(profile_data.model_dump())
+    result = await service.create_profile(profile_data.dict())
     
     if result["success"]:
         return result

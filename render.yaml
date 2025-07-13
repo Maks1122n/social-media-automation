@@ -2,13 +2,9 @@ services:
   - type: web
     name: social-media-automation
     env: python
-    buildCommand: cd backend && pip install --only-binary=all --prefer-binary -r requirements.txt
+    buildCommand: cd backend && pip install -r requirements.txt
     startCommand: cd backend && uvicorn main:app --host 0.0.0.0 --port $PORT
     envVars:
-      - key: PIP_ONLY_BINARY
-        value: ":all:"
-      - key: PIP_PREFER_BINARY
-        value: "true"
       - key: ADSPOWER_API_KEY
         value: 5e2a5c1494898b680a956f47a4183fdd
       - key: ADSPOWER_API_URL
