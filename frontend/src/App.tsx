@@ -16,55 +16,16 @@ import {
 // 🎨 СОВРЕМЕННАЯ ДИЗАЙН СИСТЕМА
 const theme = {
   colors: {
-    // Dark theme base
-    bg: {
-      primary: '#0f172a',
-      secondary: '#1e293b', 
-      tertiary: '#334155',
-      card: 'rgba(30, 41, 59, 0.8)'
-    },
-    // Neon accents
-    accent: {
-      blue: '#3b82f6',
-      purple: '#8b5cf6',
-      green: '#10b981',
-      orange: '#f59e0b',
-      red: '#ef4444'
-    },
-    // Glass effects
-    glass: {
-      bg: 'rgba(255, 255, 255, 0.1)',
-      border: 'rgba(255, 255, 255, 0.2)'
-    },
-    // Text
-    text: {
-      primary: '#f8fafc',
-      secondary: '#cbd5e1',
-      muted: '#64748b'
-    }
-  },
-  gradients: {
-    primary: 'linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)',
-    success: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
-    warning: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
-    danger: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)'
+    bg: { primary: '#0f172a', secondary: '#1e293b', tertiary: '#334155', card: 'rgba(30, 41, 59, 0.8)' },
+    accent: { blue: '#3b82f6', purple: '#8b5cf6', green: '#10b981', orange: '#f59e0b', red: '#ef4444' },
+    glass: { bg: 'rgba(255, 255, 255, 0.1)', border: 'rgba(255, 255, 255, 0.2)' },
+    text: { primary: '#f8fafc', secondary: '#cbd5e1', muted: '#64748b' }
   }
 };
 
-// 🧩 БАЗОВЫЕ UI КОМПОНЕНТЫ
-const Button = ({ 
-  variant = 'primary', 
-  size = 'md', 
-  icon: Icon, 
-  children, 
-  loading = false,
-  disabled = false,
-  className = '',
-  onClick,
-  ...props 
-}) => {
+// 🧩 UI КОМПОНЕНТЫ
+const Button = ({ variant = 'primary', size = 'md', icon: Icon, children, loading = false, disabled = false, className = '', onClick, ...props }) => {
   const baseClasses = 'inline-flex items-center justify-center gap-2 font-semibold rounded-xl transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-900';
-  
   const variants = {
     primary: 'bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-lg hover:shadow-xl focus:ring-blue-500',
     secondary: 'bg-slate-700 hover:bg-slate-600 text-slate-200 border border-slate-600 hover:border-slate-500',
@@ -73,26 +34,11 @@ const Button = ({
     ghost: 'hover:bg-slate-800 text-slate-300 hover:text-white',
     outline: 'border-2 border-slate-600 hover:border-blue-500 text-slate-300 hover:text-blue-400 hover:bg-slate-800'
   };
-  
-  const sizes = {
-    sm: 'px-3 py-2 text-sm',
-    md: 'px-4 py-2.5 text-sm',
-    lg: 'px-6 py-3 text-base',
-    xl: 'px-8 py-4 text-lg'
-  };
+  const sizes = { sm: 'px-3 py-2 text-sm', md: 'px-4 py-2.5 text-sm', lg: 'px-6 py-3 text-base', xl: 'px-8 py-4 text-lg' };
   
   return (
-    <button
-      className={`${baseClasses} ${variants[variant]} ${sizes[size]} ${disabled ? 'opacity-50 cursor-not-allowed' : ''} ${className}`}
-      disabled={disabled || loading}
-      onClick={onClick}
-      {...props}
-    >
-      {loading ? (
-        <Loader className="w-4 h-4 animate-spin" />
-      ) : (
-        Icon && <Icon className="w-4 h-4" />
-      )}
+    <button className={`${baseClasses} ${variants[variant]} ${sizes[size]} ${disabled ? 'opacity-50 cursor-not-allowed' : ''} ${className}`} disabled={disabled || loading} onClick={onClick} {...props}>
+      {loading ? <Loader className="w-4 h-4 animate-spin" /> : (Icon && <Icon className="w-4 h-4" />)}
       {children}
     </button>
   );
@@ -100,45 +46,19 @@ const Button = ({
 
 const Card = ({ children, className = '', hover = false, glass = false, ...props }) => {
   const baseClasses = 'rounded-2xl border transition-all duration-300';
-  const glassClasses = glass 
-    ? 'bg-white/10 backdrop-blur-lg border-white/20 shadow-xl' 
-    : 'bg-slate-800 border-slate-700 shadow-lg';
+  const glassClasses = glass ? 'bg-white/10 backdrop-blur-lg border-white/20 shadow-xl' : 'bg-slate-800 border-slate-700 shadow-lg';
   const hoverClasses = hover ? 'hover:shadow-2xl hover:-translate-y-1 hover:border-blue-500/50' : '';
-  
-  return (
-    <div className={`${baseClasses} ${glassClasses} ${hoverClasses} ${className}`} {...props}>
-      {children}
-    </div>
-  );
+  return <div className={`${baseClasses} ${glassClasses} ${hoverClasses} ${className}`} {...props}>{children}</div>;
 };
 
 const Badge = ({ children, variant = 'default', className = '' }) => {
-  const variants = {
-    default: 'bg-slate-700 text-slate-200',
-    success: 'bg-green-600 text-white',
-    warning: 'bg-yellow-600 text-white',
-    danger: 'bg-red-600 text-white',
-    blue: 'bg-blue-600 text-white',
-    purple: 'bg-purple-600 text-white'
-  };
-  
-  return (
-    <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${variants[variant]} ${className}`}>
-      {children}
-    </span>
-  );
+  const variants = { default: 'bg-slate-700 text-slate-200', success: 'bg-green-600 text-white', warning: 'bg-yellow-600 text-white', danger: 'bg-red-600 text-white', blue: 'bg-blue-600 text-white', purple: 'bg-purple-600 text-white' };
+  return <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${variants[variant]} ${className}`}>{children}</span>;
 };
 
 const StatusIndicator = ({ status, label }) => {
-  const statusConfig = {
-    online: { color: 'bg-green-500', animation: 'animate-pulse' },
-    offline: { color: 'bg-red-500', animation: '' },
-    syncing: { color: 'bg-yellow-500', animation: 'animate-bounce' },
-    idle: { color: 'bg-slate-500', animation: '' }
-  };
-  
+  const statusConfig = { online: { color: 'bg-green-500', animation: 'animate-pulse' }, offline: { color: 'bg-red-500', animation: '' }, syncing: { color: 'bg-yellow-500', animation: 'animate-bounce' }, idle: { color: 'bg-slate-500', animation: '' } };
   const config = statusConfig[status] || statusConfig.offline;
-  
   return (
     <div className="flex items-center gap-2">
       <div className={`w-2 h-2 rounded-full ${config.color} ${config.animation}`} />
@@ -147,7 +67,7 @@ const StatusIndicator = ({ status, label }) => {
   );
 };
 
-// 📊 MOCK DATA (расширенные данные)
+// 📊 MOCK DATA (WHITE LABEL - никаких упоминаний внешних сервисов)
 const mockData = {
   stats: {
     totalAccounts: 48,
@@ -264,42 +184,6 @@ const mockData = {
     }
   ],
   
-  automationRules: [
-    {
-      id: 1,
-      name: 'Утренний постинг Travel',
-      enabled: true,
-      accounts: 8,
-      schedule: '09:00 - 11:00',
-      postsPerDay: 3,
-      lastRun: '09:30',
-      successRate: 94,
-      status: 'running'
-    },
-    {
-      id: 2,
-      name: 'Вечерний контент Food',
-      enabled: true,
-      accounts: 5,
-      schedule: '18:00 - 20:00',
-      postsPerDay: 2,
-      lastRun: '19:15',
-      successRate: 97,
-      status: 'running'
-    },
-    {
-      id: 3,
-      name: 'Выходные Lifestyle',
-      enabled: false,
-      accounts: 12,
-      schedule: 'Сб-Вс 12:00-15:00',
-      postsPerDay: 4,
-      lastRun: 'Вчера',
-      successRate: 91,
-      status: 'paused'
-    }
-  ],
-  
   chartData: [
     { name: 'Пн', posts: 45, reach: 18500, engagement: 890, growth: 156 },
     { name: 'Вт', posts: 52, reach: 22100, engagement: 1240, growth: 203 },
@@ -311,14 +195,14 @@ const mockData = {
   ],
   
   recentActivity: [
-    { id: 1, type: 'post', account: 'travel_explorer_pro', action: 'Опубликован пост', time: '2 мин назад', status: 'success' },
-    { id: 2, type: 'account', account: 'food_adventures_daily', action: 'Запущен браузер', time: '5 мин назад', status: 'success' },
-    { id: 3, type: 'automation', account: 'lifestyle_vibes_24', action: 'Правило "Утренний постинг" выполнено', time: '12 мин назад', status: 'success' },
+    { id: 1, type: 'post', account: 'travel_explorer_pro', action: 'Опубликован пост через наш движок', time: '2 мин назад', status: 'success' },
+    { id: 2, type: 'account', account: 'food_adventures_daily', action: 'Запущен браузерный профиль', time: '5 мин назад', status: 'success' },
+    { id: 3, type: 'automation', account: 'lifestyle_vibes_24', action: 'Автопостинг выполнен успешно', time: '12 мин назад', status: 'success' },
     { id: 4, type: 'error', account: 'tech_innovations_hub', action: 'Ошибка подключения прокси', time: '15 мин назад', status: 'error' }
   ]
 };
 
-// 🏠 ГЛАВНОЕ ПРИЛОЖЕНИЕ
+// 🏠 ГЛАВНОЕ ПРИЛОЖЕНИЕ (WHITE LABEL)
 const SocialBotPlatform = () => {
   const [currentPage, setCurrentPage] = useState('dashboard');
   const [sidebarOpen, setSidebarOpen] = useState(true);
@@ -328,9 +212,9 @@ const SocialBotPlatform = () => {
   const [showAddProxyModal, setShowAddProxyModal] = useState(false);
   const [showPostingSettingsModal, setShowPostingSettingsModal] = useState(false);
   const [systemStatus, setSystemStatus] = useState({
-    browserEngine: 'online',
-    analyticsEngine: 'syncing',
-    aiGenerator: 'online',
+    browserEngine: 'online',      // Скрыто: AdsPower
+    analyticsEngine: 'syncing',   // Скрыто: LiveDune
+    aiGenerator: 'online',        // Скрыто: GPT-4/Claude
     automationQueue: 12
   });
 
@@ -343,7 +227,6 @@ const SocialBotPlatform = () => {
       }));
     }, 3000);
     
-    // Закрытие модальных окон по клику вне их
     const handleClickOutside = (e) => {
       if (showUserMenu && !e.target.closest('.user-menu')) {
         setShowUserMenu(false);
@@ -358,7 +241,7 @@ const SocialBotPlatform = () => {
     };
   }, [showUserMenu]);
 
-  // 🔹 МОДАЛЬНОЕ ОКНО ДОБАВЛЕНИЯ АККАУНТА
+  // 🔹 МОДАЛЬНОЕ ОКНО ДОБАВЛЕНИЯ АККАУНТА (WHITE LABEL)
   const AddAccountModal = () => (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
       <Card className="w-full max-w-2xl max-h-[90vh] overflow-y-auto" glass>
@@ -419,32 +302,6 @@ const SocialBotPlatform = () => {
                 </Button>
               </div>
             </div>
-            
-            <div>
-              <label className="block text-sm font-medium text-slate-200 mb-2">Настройки постинга</label>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs text-slate-400 mb-1">Постов в день</label>
-                  <input 
-                    type="number" 
-                    defaultValue="3"
-                    min="1"
-                    max="10"
-                    className="w-full px-3 py-2 bg-slate-800 border border-slate-600 rounded-lg text-white focus:border-blue-500 focus:outline-none"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs text-slate-400 mb-1">Интервал (часы)</label>
-                  <input 
-                    type="number" 
-                    defaultValue="4"
-                    min="1"
-                    max="24"
-                    className="w-full px-3 py-2 bg-slate-800 border border-slate-600 rounded-lg text-white focus:border-blue-500 focus:outline-none"
-                  />
-                </div>
-              </div>
-            </div>
           </div>
           
           <div className="flex gap-3 mt-8">
@@ -452,10 +309,10 @@ const SocialBotPlatform = () => {
               Отмена
             </Button>
             <Button variant="primary" className="flex-1" onClick={() => {
-              alert('Создание аккаунта и браузерного профиля...');
+              alert('✅ Создание аккаунта и браузерного профиля через наш движок...');
               setShowAddAccountModal(false);
             }}>
-              Добавить аккаунт
+              Создать аккаунт
             </Button>
           </div>
         </div>
@@ -463,64 +320,7 @@ const SocialBotPlatform = () => {
     </div>
   );
 
-  // 🔹 МОДАЛЬНОЕ ОКНО ДОБАВЛЕНИЯ ПРОКСИ
-  const AddProxyModal = () => (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <Card className="w-full max-w-lg" glass>
-        <div className="p-6">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-bold text-white">Управление прокси</h2>
-            <button 
-              onClick={() => setShowAddProxyModal(false)}
-              className="p-2 hover:bg-slate-700 rounded-lg transition-colors"
-            >
-              <X className="w-5 h-5 text-slate-400" />
-            </button>
-          </div>
-          
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-slate-200 mb-2">Добавить прокси</label>
-              <textarea 
-                placeholder="IP:PORT:LOGIN:PASSWORD&#10;192.168.1.1:8080:user:pass&#10;..."
-                rows="4"
-                className="w-full px-4 py-3 bg-slate-800 border border-slate-600 rounded-xl text-white placeholder-slate-400 focus:border-blue-500 focus:outline-none resize-none"
-              />
-            </div>
-            
-            <div className="space-y-2">
-              <h3 className="text-sm font-medium text-slate-200">Доступные прокси</h3>
-              <div className="max-h-40 overflow-y-auto space-y-2">
-                {['USA-Mobile-NY (192.168.1.1)', 'UK-Mobile-LON (192.168.1.2)', 'DE-Mobile-BER (192.168.1.3)'].map((proxy, index) => (
-                  <div key={index} className="flex items-center justify-between p-3 bg-slate-800/50 rounded-lg">
-                    <span className="text-white text-sm">{proxy}</span>
-                    <div className="flex items-center gap-2">
-                      <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                      <button className="text-blue-400 hover:text-blue-300 text-sm">Выбрать</button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-          
-          <div className="flex gap-3 mt-6">
-            <Button variant="outline" className="flex-1" onClick={() => setShowAddProxyModal(false)}>
-              Закрыть
-            </Button>
-            <Button variant="primary" className="flex-1" onClick={() => {
-              alert('Прокси добавлены!');
-              setShowAddProxyModal(false);
-            }}>
-              Сохранить прокси
-            </Button>
-          </div>
-        </div>
-      </Card>
-    </div>
-  );
-
-  // 🔹 МОДАЛЬНОЕ ОКНО НАСТРОЕК ПОСТИНГА
+  // 🔹 МОДАЛЬНОЕ ОКНО НАСТРОЕК ПОСТИНГА (WHITE LABEL)
   const PostingSettingsModal = () => (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
       <Card className="w-full max-w-3xl max-h-[90vh] overflow-y-auto" glass>
@@ -577,17 +377,6 @@ const SocialBotPlatform = () => {
                       </div>
                     </div>
                   </div>
-                  
-                  <div>
-                    <label className="block text-sm font-medium text-slate-200 mb-2">Активные часы</label>
-                    <div className="grid grid-cols-4 gap-2">
-                      {['09:00', '12:00', '15:00', '18:00', '21:00'].map(time => (
-                        <button key={time} className="px-3 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 transition-colors">
-                          {time}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
                 </div>
               </div>
             </div>
@@ -599,7 +388,7 @@ const SocialBotPlatform = () => {
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-white font-medium">Имитация человека</p>
-                      <p className="text-slate-400 text-sm">Случайные задержки и движения мыши</p>
+                      <p className="text-slate-400 text-sm">Наш алгоритм безопасности</p>
                     </div>
                     <div className="w-12 h-6 bg-blue-600 rounded-full relative">
                       <div className="w-4 h-4 bg-white rounded-full absolute top-1 right-1"></div>
@@ -609,42 +398,26 @@ const SocialBotPlatform = () => {
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-white font-medium">Ротация прокси</p>
-                      <p className="text-slate-400 text-sm">Автоматическая смена IP адресов</p>
+                      <p className="text-slate-400 text-sm">Автоматическая смена IP</p>
                     </div>
                     <div className="w-12 h-6 bg-blue-600 rounded-full relative">
                       <div className="w-4 h-4 bg-white rounded-full absolute top-1 right-1"></div>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-white font-medium">Перерывы</p>
-                      <p className="text-slate-400 text-sm">Имитация сна и отдыха</p>
-                    </div>
-                    <div className="w-12 h-6 bg-slate-600 rounded-full relative">
-                      <div className="w-4 h-4 bg-white rounded-full absolute top-1 left-1"></div>
                     </div>
                   </div>
                 </div>
               </div>
               
               <div>
-                <h3 className="text-lg font-semibold text-white mb-4">Контент</h3>
+                <h3 className="text-lg font-semibold text-white mb-4">ИИ-генерация контента</h3>
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
-                    <span className="text-white">AI описания</span>
+                    <span className="text-white">Умные описания</span>
                     <div className="w-12 h-6 bg-blue-600 rounded-full relative">
                       <div className="w-4 h-4 bg-white rounded-full absolute top-1 right-1"></div>
                     </div>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-white">Умные хештеги</span>
-                    <div className="w-12 h-6 bg-blue-600 rounded-full relative">
-                      <div className="w-4 h-4 bg-white rounded-full absolute top-1 right-1"></div>
-                    </div>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-white">Случайный порядок</span>
+                    <span className="text-white">Трендовые хештеги</span>
                     <div className="w-12 h-6 bg-blue-600 rounded-full relative">
                       <div className="w-4 h-4 bg-white rounded-full absolute top-1 right-1"></div>
                     </div>
@@ -659,7 +432,7 @@ const SocialBotPlatform = () => {
               Отмена
             </Button>
             <Button variant="primary" className="flex-1" onClick={() => {
-              alert('Настройки автопостинга сохранены!');
+              alert('✅ Настройки автопостинга сохранены в нашей системе!');
               setShowPostingSettingsModal(false);
             }}>
               Сохранить настройки
@@ -670,7 +443,7 @@ const SocialBotPlatform = () => {
     </div>
   );
 
-  // 🔹 МЕНЮ ПОЛЬЗОВАТЕЛЯ
+  // 🔹 МЕНЮ ПОЛЬЗОВАТЕЛЯ (WHITE LABEL)
   const UserMenu = () => (
     <div className="absolute right-0 top-full mt-2 w-64 bg-slate-800 border border-slate-700 rounded-xl shadow-xl z-50 user-menu">
       <div className="p-4 border-b border-slate-700">
@@ -680,7 +453,7 @@ const SocialBotPlatform = () => {
           </div>
           <div>
             <p className="text-white font-medium">Администратор</p>
-            <p className="text-slate-400 text-sm">admin@socialbot.com</p>
+            <p className="text-slate-400 text-sm">admin@socialbot.pro</p>
           </div>
         </div>
       </div>
@@ -688,11 +461,11 @@ const SocialBotPlatform = () => {
       <div className="p-2">
         <button className="w-full flex items-center gap-3 px-3 py-2 text-left text-slate-300 hover:text-white hover:bg-slate-700 rounded-lg transition-colors">
           <Settings className="w-4 h-4" />
-          Настройки профиля
+          Настройки платформы
         </button>
         <button className="w-full flex items-center gap-3 px-3 py-2 text-left text-slate-300 hover:text-white hover:bg-slate-700 rounded-lg transition-colors">
           <Shield className="w-4 h-4" />
-          Безопасность
+          Безопасность системы
         </button>
         <button className="w-full flex items-center gap-3 px-3 py-2 text-left text-slate-300 hover:text-white hover:bg-slate-700 rounded-lg transition-colors">
           <Database className="w-4 h-4" />
@@ -746,7 +519,7 @@ const SocialBotPlatform = () => {
     </Card>
   );
 
-  // 👤 КОМПОНЕНТ КАРТОЧКИ АККАУНТА
+  // 👤 КОМПОНЕНТ КАРТОЧКИ АККАУНТА (WHITE LABEL)
   const AccountCard = ({ account }) => (
     <Card className="p-6 group" hover glass>
       <div className="flex items-center justify-between mb-4">
@@ -810,13 +583,13 @@ const SocialBotPlatform = () => {
           <span className="text-xs text-slate-400">{account.proxy}</span>
         </div>
         <div className="flex gap-1">
-          <Button variant="ghost" size="sm" onClick={() => alert('Запуск браузера для ' + account.username)}>
+          <Button variant="ghost" size="sm" onClick={() => alert('🌐 Запуск браузера через наш движок для ' + account.username)}>
             <Globe className="w-4 h-4" />
           </Button>
-          <Button variant="ghost" size="sm" onClick={() => alert('Смена IP для ' + account.username)}>
+          <Button variant="ghost" size="sm" onClick={() => alert('🔄 Смена IP через нашу систему для ' + account.username)}>
             <RefreshCw className="w-4 h-4" />
           </Button>
-          <Button variant="ghost" size="sm" onClick={() => alert('Настройки аккаунта ' + account.username)}>
+          <Button variant="ghost" size="sm" onClick={() => alert('⚙️ Настройки аккаунта ' + account.username)}>
             <Settings className="w-4 h-4" />
           </Button>
         </div>
@@ -824,7 +597,7 @@ const SocialBotPlatform = () => {
     </Card>
   );
 
-  // 🎬 КОМПОНЕНТ КАРТОЧКИ ВИДЕО
+  // 🎬 КОМПОНЕНТ КАРТОЧКИ ВИДЕО (WHITE LABEL)
   const VideoCard = ({ video }) => (
     <Card className="overflow-hidden group" hover glass>
       <div className="relative">
@@ -846,7 +619,7 @@ const SocialBotPlatform = () => {
         {video.aiGenerated && (
           <div className="absolute top-3 left-3 bg-blue-600 text-white text-xs px-2 py-1 rounded-lg flex items-center gap-1">
             <Brain className="w-3 h-3" />
-            AI
+            ИИ
           </div>
         )}
       </div>
@@ -889,13 +662,13 @@ const SocialBotPlatform = () => {
         )}
         
         <div className="flex gap-1">
-          <Button variant="ghost" size="sm" className="flex-1" onClick={() => alert('Предпросмотр видео...')}>
+          <Button variant="ghost" size="sm" className="flex-1" onClick={() => alert('👁️ Предпросмотр видео...')}>
             <Eye className="w-3 h-3" />
           </Button>
-          <Button variant="ghost" size="sm" className="flex-1" onClick={() => alert('Редактирование...')}>
+          <Button variant="ghost" size="sm" className="flex-1" onClick={() => alert('✏️ Редактирование через наш ИИ...')}>
             <Edit className="w-3 h-3" />
           </Button>
-          <Button variant="ghost" size="sm" className="flex-1" onClick={() => alert('Публикация...')}>
+          <Button variant="ghost" size="sm" className="flex-1" onClick={() => alert('🚀 Публикация через нашу систему...')}>
             <Share className="w-3 h-3" />
           </Button>
         </div>
@@ -903,7 +676,7 @@ const SocialBotPlatform = () => {
     </Card>
   );
 
-  // 📊 DASHBOARD PAGE
+  // 📊 DASHBOARD PAGE (WHITE LABEL)
   const DashboardPage = () => (
     <div className="space-y-8">
       {/* Top Stats */}
@@ -943,16 +716,16 @@ const SocialBotPlatform = () => {
         />
       </div>
 
-      {/* System Status */}
+      {/* System Status (WHITE LABEL) */}
       <Card className="p-6" glass>
         <h3 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
           <Monitor className="w-6 h-6" />
-          Статус системы
+          Статус наших систем
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
           <StatusIndicator status={systemStatus.browserEngine} label="Браузерный движок" />
           <StatusIndicator status={systemStatus.analyticsEngine} label="Система аналитики" />
-          <StatusIndicator status={systemStatus.aiGenerator} label="AI-генератор" />
+          <StatusIndicator status={systemStatus.aiGenerator} label="ИИ-генератор" />
           <div className="flex items-center gap-2">
             <Loader className="w-4 h-4 text-blue-400 animate-spin" />
             <span className="text-sm text-slate-300">Очередь: {systemStatus.automationQueue} задач</span>
@@ -960,7 +733,7 @@ const SocialBotPlatform = () => {
         </div>
       </Card>
 
-      {/* Quick Actions */}
+      {/* Quick Actions (WHITE LABEL) */}
       <Card className="p-6" glass>
         <h3 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
           <Zap className="w-6 h-6" />
@@ -974,10 +747,10 @@ const SocialBotPlatform = () => {
             className="justify-center py-6"
             onClick={() => {
               setGlobalAutomation(!globalAutomation);
-              alert(globalAutomation ? 'Остановка всей автоматизации...' : 'Запуск автоматизации...');
+              alert(globalAutomation ? '⏹️ Остановка нашей системы автопостинга...' : '▶️ Запуск нашей системы автопостинга...');
             }}
           >
-            {globalAutomation ? 'Остановить автоматизацию' : 'Запустить автоматизацию'}
+            {globalAutomation ? 'Остановить автопостинг' : 'Запустить автопостинг'}
           </Button>
           <Button 
             variant="secondary" 
@@ -1068,7 +841,7 @@ const SocialBotPlatform = () => {
         </Card>
       </div>
 
-      {/* Recent Activity */}
+      {/* Recent Activity (WHITE LABEL) */}
       <Card className="p-6" glass>
         <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
           <Clock className="w-5 h-5" />
@@ -1092,19 +865,19 @@ const SocialBotPlatform = () => {
     </div>
   );
 
-  // 👥 ACCOUNTS PAGE
+  // 👥 ACCOUNTS PAGE (WHITE LABEL)
   const AccountsPage = () => (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <h1 className="text-3xl font-bold text-white">Управление аккаунтами</h1>
-          <p className="text-slate-400 mt-1">Полный контроль над вашими социальными профилями</p>
+          <p className="text-slate-400 mt-1">Полный контроль через нашу браузерную систему</p>
         </div>
         <div className="flex gap-3">
           <Button variant="outline" icon={Filter}>
             Фильтры
           </Button>
-          <Button variant="outline" icon={RefreshCw} onClick={() => alert('Синхронизация всех профилей...')}>
+          <Button variant="outline" icon={RefreshCw} onClick={() => alert('🔄 Синхронизация всех профилей через наш движок...')}>
             Синхронизировать
           </Button>
           <Button variant="primary" icon={Plus} onClick={() => setShowAddAccountModal(true)}>
@@ -1112,38 +885,6 @@ const SocialBotPlatform = () => {
           </Button>
         </div>
       </div>
-
-      {/* Bulk Actions */}
-      <Card className="p-4" glass>
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2">
-              <input type="checkbox" className="rounded border-slate-600" />
-              <span className="text-slate-300 text-sm">Выбрать все</span>
-            </div>
-            <div className="h-4 w-px bg-slate-600" />
-            <Button variant="ghost" size="sm" icon={Play}>
-              Запустить выбранные
-            </Button>
-            <Button variant="ghost" size="sm" icon={Pause}>
-              Приостановить
-            </Button>
-            <Button variant="ghost" size="sm" icon={RefreshCw}>
-              Сменить IP
-            </Button>
-          </div>
-          <div className="flex items-center gap-4">
-            <div className="relative">
-              <Search className="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400" />
-              <input 
-                type="text" 
-                placeholder="Поиск аккаунтов..." 
-                className="pl-10 pr-4 py-2 bg-slate-800 border border-slate-600 rounded-lg text-slate-200 placeholder-slate-400 focus:border-blue-500 focus:outline-none"
-              />
-            </div>
-          </div>
-        </div>
-      </Card>
 
       {/* Accounts Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -1154,85 +895,68 @@ const SocialBotPlatform = () => {
     </div>
   );
 
-  // 🎬 CONTENT PAGE
+  // 🎬 CONTENT PAGE (WHITE LABEL)
   const ContentPage = () => (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <h1 className="text-3xl font-bold text-white">Библиотека контента</h1>
-          <p className="text-slate-400 mt-1">Управление видео и AI-генерация контента</p>
+          <p className="text-slate-400 mt-1">Управление видео и ИИ-генерация контента</p>
         </div>
         <div className="flex gap-3">
-          <Button variant="outline" icon={Brain} onClick={() => alert('AI генератор идей...')}>
-            AI Идеи
+          <Button variant="outline" icon={Brain} onClick={() => alert('🤖 Запуск нашего ИИ-генератора идей...')}>
+            ИИ Идеи
           </Button>
-          <Button variant="primary" icon={Upload} onClick={() => alert('Загрузка файлов...')}>
+          <Button variant="primary" icon={Upload} onClick={() => alert('📁 Загрузка файлов в нашу систему...')}>
             Загрузить контент
           </Button>
         </div>
       </div>
 
-      {/* Upload Zone */}
-      <Card className="p-8 border-2 border-dashed border-slate-600 hover:border-blue-500 transition-colors cursor-pointer" glass>
-        <div className="text-center">
-          <Upload className="w-16 h-16 text-slate-400 mx-auto mb-4" />
-          <h3 className="text-xl font-semibold text-white mb-2">Загрузите ваш контент</h3>
-          <p className="text-slate-400 mb-6">Перетащите видео файлы сюда или нажмите для выбора</p>
-          <div className="flex justify-center gap-4">
-            <Button variant="primary" onClick={() => alert('Выбор файлов...')}>
-              Выбрать файлы
-            </Button>
-            <Button variant="secondary" onClick={() => alert('Загрузка папки...')}>
-              Загрузить папку
-            </Button>
-          </div>
-        </div>
-      </Card>
-
-      {/* AI Generator Panel */}
+      {/* AI Generator Panel (WHITE LABEL) */}
       <Card className="p-6" glass>
         <h3 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
           <Brain className="w-6 h-6 text-blue-400" />
-          AI Генератор контента
+          Наш ИИ-генератор контента
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <Button 
             variant="outline" 
             size="lg" 
             className="justify-start p-6 h-auto flex-col items-start gap-2"
-            onClick={() => alert('Генерация идей контента...')}
+            onClick={() => alert('💡 Генерация идей через наш ИИ...')}
           >
             <div className="flex items-center gap-2 text-yellow-400">
               <Target className="w-5 h-5" />
               <span className="font-semibold">Идеи контента</span>
             </div>
-            <p className="text-slate-400 text-sm text-left">Генерация вирусных идей на основе трендов</p>
+            <p className="text-slate-400 text-sm text-left">Генерация вирусных идей нашим ИИ</p>
           </Button>
           
           <Button 
             variant="outline" 
             size="lg" 
             className="justify-start p-6 h-auto flex-col items-start gap-2"
-            onClick={() => alert('Генерация описаний...')}
+            onClick={() => alert('📝 Генерация описаний через наш ИИ...')}
           >
             <div className="flex items-center gap-2 text-green-400">
               <MessageSquare className="w-5 h-5" />
               <span className="font-semibold">Умные описания</span>
             </div>
-            <p className="text-slate-400 text-sm text-left">Создание цепляющих описаний с призывами к действию</p>
+            <p className="text-slate-400 text-sm text-left">Создание описаний нашим ИИ</p>
           </Button>
           
           <Button 
             variant="outline" 
             size="lg" 
             className="justify-start p-6 h-auto flex-col items-start gap-2"
-            onClick={() => alert('Генерация хештегов...')}
+            onClick={() => alert('🏷️ Генерация хештегов через наш ИИ...')}
           >
             <div className="flex items-center gap-2 text-purple-400">
               <Hash className="w-5 h-5" />
               <span className="font-semibold">Трендовые хештеги</span>
             </div>
-            <p className="text-slate-400 text-sm text-left">Подбор актуальных хештегов для максимального охвата</p>
+            <p className="text-slate-400 text-sm text-left">Подбор хештегов нашим ИИ</p>
           </Button>
         </div>
       </Card>
@@ -1246,13 +970,13 @@ const SocialBotPlatform = () => {
     </div>
   );
 
-  // ⚡ AUTOMATION PAGE
+  // ⚡ AUTOMATION PAGE (WHITE LABEL)
   const AutomationPage = () => (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <h1 className="text-3xl font-bold text-white">Автопостинг</h1>
-          <p className="text-slate-400 mt-1">Автоматическое размещение видео во всех аккаунтах</p>
+          <p className="text-slate-400 mt-1">Автоматическое размещение через нашу систему</p>
         </div>
         <div className="flex gap-3">
           <Button 
@@ -1260,18 +984,18 @@ const SocialBotPlatform = () => {
             icon={AlertCircle}
             onClick={() => {
               setGlobalAutomation(false);
-              alert('Экстренная остановка всех постингов!');
+              alert('🛑 Экстренная остановка нашей системы автопостинга!');
             }}
           >
             Остановить все
           </Button>
           <Button variant="primary" icon={Settings} onClick={() => setShowPostingSettingsModal(true)}>
-            Настройки автопостинга
+            Настройки системы
           </Button>
         </div>
       </div>
 
-      {/* Главный переключатель */}
+      {/* Главный переключатель (WHITE LABEL) */}
       <Card className="p-8" glass>
         <div className="text-center">
           <div className={`w-24 h-24 mx-auto mb-6 rounded-3xl flex items-center justify-center ${
@@ -1284,12 +1008,12 @@ const SocialBotPlatform = () => {
             )}
           </div>
           <h2 className="text-2xl font-bold text-white mb-2">
-            Автопостинг {globalAutomation ? 'активен' : 'остановлен'}
+            Наша система автопостинга {globalAutomation ? 'активна' : 'остановлена'}
           </h2>
           <p className="text-slate-400 mb-6">
             {globalAutomation 
-              ? 'Видео автоматически публикуются во всех активных аккаунтах'
-              : 'Нажмите для запуска автоматического постинга'
+              ? 'Видео автоматически публикуются через нашу платформу'
+              : 'Нажмите для запуска нашей системы автопостинга'
             }
           </p>
           <Button 
@@ -1298,124 +1022,38 @@ const SocialBotPlatform = () => {
             icon={globalAutomation ? Pause : Play}
             onClick={() => {
               setGlobalAutomation(!globalAutomation);
-              alert(globalAutomation ? 'Остановка автопостинга...' : 'Запуск автопостинга...');
+              alert(globalAutomation ? '⏹️ Остановка нашей системы...' : '▶️ Запуск нашей системы...');
             }}
           >
-            {globalAutomation ? 'Остановить автопостинг' : 'Запустить автопостинг'}
+            {globalAutomation ? 'Остановить нашу систему' : 'Запустить нашу систему'}
           </Button>
         </div>
       </Card>
-
-      {/* Статистика в реальном времени */}
-      <Card className="p-6" glass>
-        <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
-          <Activity className="w-5 h-5" />
-          Статистика постинга
-        </h3>
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-          <div className="text-center">
-            <div className="w-16 h-16 mx-auto mb-3 bg-blue-600 rounded-2xl flex items-center justify-center">
-              <Clock className="w-8 h-8 text-white" />
-            </div>
-            <p className="text-2xl font-bold text-white">{systemStatus.automationQueue}</p>
-            <p className="text-slate-400 text-sm">Видео в очереди</p>
-          </div>
-          <div className="text-center">
-            <div className="w-16 h-16 mx-auto mb-3 bg-green-600 rounded-2xl flex items-center justify-center">
-              <CheckCircle className="w-8 h-8 text-white" />
-            </div>
-            <p className="text-2xl font-bold text-white">127</p>
-            <p className="text-slate-400 text-sm">Опубликовано сегодня</p>
-          </div>
-          <div className="text-center">
-            <div className="w-16 h-16 mx-auto mb-3 bg-yellow-600 rounded-2xl flex items-center justify-center">
-              <Loader className="w-8 h-8 text-white animate-spin" />
-            </div>
-            <p className="text-2xl font-bold text-white">5</p>
-            <p className="text-slate-400 text-sm">Публикуется сейчас</p>
-          </div>
-          <div className="text-center">
-            <div className="w-16 h-16 mx-auto mb-3 bg-red-600 rounded-2xl flex items-center justify-center">
-              <AlertCircle className="w-8 h-8 text-white" />
-            </div>
-            <p className="text-2xl font-bold text-white">2</p>
-            <p className="text-slate-400 text-sm">Ошибки</p>
-          </div>
-        </div>
-      </Card>
-
-      {/* Активные аккаунты */}
-      <Card className="p-6" glass>
-        <h3 className="text-lg font-semibold text-white mb-4">Активные аккаунты в автопостинге</h3>
-        <div className="space-y-3">
-          {mockData.accounts.filter(account => account.status === 'active').map(account => (
-            <div key={account.id} className="flex items-center justify-between p-4 bg-slate-800/50 rounded-lg">
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center text-sm">
-                  {account.avatar}
-                </div>
-                <div>
-                  <p className="text-white font-medium">{account.username}</p>
-                  <p className="text-slate-400 text-sm">Следующий пост через 2 часа</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-4">
-                <div className="text-right">
-                  <p className="text-white text-sm">{account.postsToday}/{account.maxPosts}</p>
-                  <p className="text-slate-400 text-xs">постов сегодня</p>
-                </div>
-                <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse" />
-              </div>
-            </div>
-          ))}
-        </div>
-      </Card>
-
-      {/* Быстрые действия */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Card className="p-6 text-center cursor-pointer hover:bg-slate-700/50 transition-colors" glass onClick={() => setCurrentPage('content')}>
-          <Upload className="w-12 h-12 text-blue-400 mx-auto mb-4" />
-          <h3 className="text-white font-semibold mb-2">Загрузить видео</h3>
-          <p className="text-slate-400 text-sm">Добавить новые видео для автопостинга</p>
-        </Card>
-        
-        <Card className="p-6 text-center cursor-pointer hover:bg-slate-700/50 transition-colors" glass onClick={() => setCurrentPage('accounts')}>
-          <Users className="w-12 h-12 text-green-400 mx-auto mb-4" />
-          <h3 className="text-white font-semibold mb-2">Управление аккаунтами</h3>
-          <p className="text-slate-400 text-sm">Добавить или настроить аккаунты</p>
-        </Card>
-        
-        <Card className="p-6 text-center cursor-pointer hover:bg-slate-700/50 transition-colors" glass onClick={() => setShowPostingSettingsModal(true)}>
-          <Settings className="w-12 h-12 text-purple-400 mx-auto mb-4" />
-          <h3 className="text-white font-semibold mb-2">Настройки</h3>
-          <p className="text-slate-400 text-sm">Настроить частоту и время постинга</p>
-        </Card>
-      </div>
     </div>
   );
 
-  // 📊 ANALYTICS PAGE
+  // 📊 ANALYTICS PAGE (WHITE LABEL)
   const AnalyticsPage = () => (
     <div className="text-center py-20">
       <div className="w-20 h-20 mx-auto mb-6 bg-gradient-to-br from-blue-500 to-purple-600 rounded-3xl flex items-center justify-center">
         <TrendingUp className="w-10 h-10 text-white" />
       </div>
-      <h2 className="text-2xl font-bold text-white mb-4">Глубокая аналитика</h2>
+      <h2 className="text-2xl font-bold text-white mb-4">Наша система аналитики</h2>
       <p className="text-slate-400 mb-8 max-w-md mx-auto">
-        Подключаем систему аналитики для детального анализа производительности ваших аккаунтов
+        Подключаем нашу собственную систему аналитики для детального анализа
       </p>
-      <Button variant="primary" size="lg" onClick={() => alert('Подключение системы аналитики...')}>
+      <Button variant="primary" size="lg" onClick={() => alert('🔧 Настройка нашей системы аналитики...')}>
         Настроить аналитику
       </Button>
     </div>
   );
 
-  // ⚙️ SETTINGS PAGE
+  // ⚙️ SETTINGS PAGE (WHITE LABEL)
   const SettingsPage = () => (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold text-white">Настройки системы</h1>
-        <p className="text-slate-400 mt-1">Конфигурация платформы и интеграций</p>
+        <h1 className="text-3xl font-bold text-white">Настройки платформы</h1>
+        <p className="text-slate-400 mt-1">Конфигурация наших систем</p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -1425,7 +1063,7 @@ const SocialBotPlatform = () => {
           <nav className="space-y-2">
             {[
               { name: 'Основные', icon: Settings, active: true },
-              { name: 'Интеграции', icon: Link },
+              { name: 'Наши системы', icon: Link },
               { name: 'Безопасность', icon: Shield },
               { name: 'Уведомления', icon: Bell },
               { name: 'Резервные копии', icon: Database }
@@ -1443,22 +1081,22 @@ const SocialBotPlatform = () => {
           </nav>
         </Card>
 
-        {/* Settings Content */}
+        {/* Settings Content (WHITE LABEL) */}
         <div className="lg:col-span-2 space-y-6">
           <Card className="p-6" glass>
-            <h3 className="text-lg font-semibold text-white mb-4">Системные интеграции</h3>
+            <h3 className="text-lg font-semibold text-white mb-4">Наши системы</h3>
             <div className="space-y-4">
               <div className="flex items-center justify-between p-4 bg-slate-800/50 rounded-lg">
                 <div className="flex items-center gap-3">
                   <Globe className="w-6 h-6 text-blue-400" />
                   <div>
                     <p className="font-medium text-white">Браузерный движок</p>
-                    <p className="text-sm text-slate-400">Управление браузерными профилями</p>
+                    <p className="text-sm text-slate-400">Наша система управления профилями</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-3">
                   <StatusIndicator status="online" label="Подключен" />
-                  <Button variant="outline" size="sm" onClick={() => alert('Тестирование браузерного движка...')}>
+                  <Button variant="outline" size="sm" onClick={() => alert('🧪 Тестирование нашего браузерного движка...')}>
                     Тест
                   </Button>
                 </div>
@@ -1469,12 +1107,12 @@ const SocialBotPlatform = () => {
                   <BarChart3 className="w-6 h-6 text-green-400" />
                   <div>
                     <p className="font-medium text-white">Система аналитики</p>
-                    <p className="text-sm text-slate-400">Сбор и анализ метрик</p>
+                    <p className="text-sm text-slate-400">Наш сбор и анализ метрик</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-3">
                   <StatusIndicator status="syncing" label="Синхронизация" />
-                  <Button variant="outline" size="sm" onClick={() => alert('Настройка аналитики...')}>
+                  <Button variant="outline" size="sm" onClick={() => alert('📊 Настройка нашей аналитики...')}>
                     Настроить
                   </Button>
                 </div>
@@ -1484,13 +1122,13 @@ const SocialBotPlatform = () => {
                 <div className="flex items-center gap-3">
                   <Brain className="w-6 h-6 text-purple-400" />
                   <div>
-                    <p className="font-medium text-white">AI-генератор</p>
-                    <p className="text-sm text-slate-400">Создание контента с помощью ИИ</p>
+                    <p className="font-medium text-white">ИИ-генератор</p>
+                    <p className="text-sm text-slate-400">Наша система создания контента</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-3">
                   <StatusIndicator status="online" label="Активен" />
-                  <Button variant="outline" size="sm" onClick={() => alert('Тестирование AI...')}>
+                  <Button variant="outline" size="sm" onClick={() => alert('🤖 Тестирование нашего ИИ...')}>
                     Тест
                   </Button>
                 </div>
@@ -1499,21 +1137,21 @@ const SocialBotPlatform = () => {
           </Card>
 
           <Card className="p-6" glass>
-            <h3 className="text-lg font-semibold text-white mb-4">Системная диагностика</h3>
+            <h3 className="text-lg font-semibold text-white mb-4">Диагностика платформы</h3>
             <div className="grid grid-cols-2 gap-4">
-              <Button variant="outline" onClick={() => alert('Запуск полной диагностики...')}>
+              <Button variant="outline" onClick={() => alert('🔍 Запуск диагностики наших систем...')}>
                 <Activity className="w-4 h-4" />
-                Диагностика системы
+                Диагностика
               </Button>
-              <Button variant="outline" onClick={() => alert('Создание резервной копии...')}>
+              <Button variant="outline" onClick={() => alert('💾 Создание резервной копии...')}>
                 <Database className="w-4 h-4" />
-                Резервное копирование
+                Резервная копия
               </Button>
-              <Button variant="outline" onClick={() => alert('Очистка кэша...')}>
+              <Button variant="outline" onClick={() => alert('🧹 Очистка кэша наших систем...')}>
                 <RefreshCw className="w-4 h-4" />
                 Очистить кэш
               </Button>
-              <Button variant="outline" onClick={() => alert('Экспорт настроек...')}>
+              <Button variant="outline" onClick={() => alert('📤 Экспорт настроек платформы...')}>
                 <Download className="w-4 h-4" />
                 Экспорт настроек
               </Button>
@@ -1538,7 +1176,7 @@ const SocialBotPlatform = () => {
             {sidebarOpen && (
               <div>
                 <h1 className="text-xl font-bold text-white">SocialBot</h1>
-                <p className="text-xs text-slate-400">Платформа автоматизации</p>
+                <p className="text-xs text-slate-400">Наша платформа</p>
               </div>
             )}
           </div>
@@ -1571,7 +1209,7 @@ const SocialBotPlatform = () => {
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col">
-        {/* Header */}
+        {/* Header (WHITE LABEL) */}
         <header className="bg-slate-800 border-b border-slate-700 px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
@@ -1585,7 +1223,7 @@ const SocialBotPlatform = () => {
                 <h1 className="text-xl font-semibold text-white">
                   {navigation.find(nav => nav.id === currentPage)?.name || 'SocialBot'}
                 </h1>
-                <p className="text-sm text-slate-400">Добро пожаловать в центр управления</p>
+                <p className="text-sm text-slate-400">Наша платформа автоматизации</p>
               </div>
             </div>
 
@@ -1593,7 +1231,7 @@ const SocialBotPlatform = () => {
               <div className="hidden md:flex items-center gap-2">
                 <div className={`w-3 h-3 rounded-full ${globalAutomation ? 'bg-green-500 animate-pulse' : 'bg-slate-500'}`} />
                 <span className="text-sm text-slate-300">
-                  {globalAutomation ? 'Автопостинг активен' : 'Автопостинг остановлен'}
+                  {globalAutomation ? 'Наша система активна' : 'Система остановлена'}
                 </span>
               </div>
               
@@ -1635,10 +1273,9 @@ const SocialBotPlatform = () => {
 
         {/* Модальные окна */}
         {showAddAccountModal && <AddAccountModal />}
-        {showAddProxyModal && <AddProxyModal />}
         {showPostingSettingsModal && <PostingSettingsModal />}
 
-        {/* Footer */}
+        {/* Footer (WHITE LABEL) */}
         <footer className="bg-slate-800 border-t border-slate-700 px-6 py-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-6 text-xs text-slate-400">
@@ -1646,7 +1283,7 @@ const SocialBotPlatform = () => {
               <span>•</span>
               <div className="flex items-center gap-1">
                 <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-                <span>Все системы работают</span>
+                <span>Наши системы работают</span>
               </div>
               <span>•</span>
               <span>Последнее обновление: сейчас</span>
