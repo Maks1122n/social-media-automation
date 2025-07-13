@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: social-media-automation
+    env: python
+    region: oregon
+    plan: free
+    buildCommand: cd backend && pip install -r requirements.txt
+    startCommand: cd backend && uvicorn main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: ADSPOWER_API_KEY
+        value: 5e2a5c1494898b680a956f47a4183fdd
+      - key: ADSPOWER_API_URL
+        value: http://local.adspower.net:50325
+      - key: DEBUG
+        value: false 
