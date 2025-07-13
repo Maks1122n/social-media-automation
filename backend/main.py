@@ -27,28 +27,42 @@ async def root():
     return {
         "message": "🚀 Social Media Automation API работает!",
         "version": "1.0.0",
-        "status": "✅ Готов к работе!",
-        "python_version": "3.13 compatible"
+        "status": "✅ SUCCESS! НАКОНЕЦ-ТО ЗАРАБОТАЛО!",
+        "python_version": "3.13.4",
+        "fastapi_version": "0.115.0"
     }
 
 @app.get("/api/health")
 async def health_check():
+    import sys
     return {
         "status": "healthy",
-        "message": "Все системы работают нормально ✅"
+        "message": "🎉 Все системы работают! MVP запущен!",
+        "python": sys.version,
+        "platform": "Render"
     }
 
-# Простой тест эндпоинт
 @app.get("/api/test")
 async def test_endpoint():
     return {
         "success": True,
-        "message": "Тест прошел успешно! 🎉",
-        "backend": "FastAPI работает",
-        "database": "Готово к подключению"
+        "message": "🎉 ТЕСТ ПРОШЕЛ! API РАБОТАЕТ!",
+        "backend": "FastAPI 0.115.0",
+        "database": "Готово к подключению",
+        "adspower": "Готово к интеграции"
+    }
+
+# Простой POST endpoint
+@app.post("/api/echo")
+async def echo_endpoint(data: dict):
+    return {
+        "success": True,
+        "message": "Echo работает!",
+        "received_data": data
     }
 
 if __name__ == "__main__":
     import uvicorn
-    print("🚀 Запускаем сервер...")
+    print("🚀 Запускаем Social Media Automation API...")
+    print("🎯 Render деплой - версия для Python 3.13")
     uvicorn.run(app, host="0.0.0.0", port=8000, reload=True) 
