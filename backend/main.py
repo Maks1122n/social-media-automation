@@ -1,9 +1,6 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.staticfiles import StaticFiles
 import os
-import uvicorn
-from typing import Dict, Any
 
 # Создаем приложение FastAPI
 app = FastAPI(
@@ -25,34 +22,33 @@ app.add_middleware(
 os.makedirs("uploads", exist_ok=True)
 os.makedirs("logs", exist_ok=True)
 
-# Статические файлы
-app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
-
-# Импорт роутеров (если есть)
-try:
-    from adspower_api import router as adspower_router
-    app.include_router(adspower_router)
-except ImportError:
-    print("adspower_api не найден, пропускаем")
-
 @app.get("/")
-async def root() -> Dict[str, Any]:
+async def root():
     return {
-        "message": "Social Media Automation API работает!",
+        "message": "🚀 Social Media Automation API работает!",
         "version": "1.0.0",
-        "status": "🚀 Готов к работе!",
+        "status": "✅ Готов к работе!",
         "python_version": "3.13 compatible"
     }
 
 @app.get("/api/health")
-async def health_check() -> Dict[str, Any]:
+async def health_check():
     return {
         "status": "healthy",
         "message": "Все системы работают нормально ✅"
     }
 
+# Простой тест эндпоинт
+@app.get("/api/test")
+async def test_endpoint():
+    return {
+        "success": True,
+        "message": "Тест прошел успешно! 🎉",
+        "backend": "FastAPI работает",
+        "database": "Готово к подключению"
+    }
+
 if __name__ == "__main__":
+    import uvicorn
     print("🚀 Запускаем сервер...")
-    print("📍 Адрес: http://localhost:8000")
-    print("📖 Документация: http://localhost:8000/docs")
     uvicorn.run(app, host="0.0.0.0", port=8000, reload=True) 
