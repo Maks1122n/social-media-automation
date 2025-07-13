@@ -1,15 +1,17 @@
 from fastapi import APIRouter, HTTPException
 from services.adspower import AdsPowerService
 from pydantic import BaseModel
-from typing import Optional
+from typing import Optional, Dict, Any
 
 router = APIRouter(prefix="/api/adspower", tags=["adspower"])
 
 class ProfileCreate(BaseModel):
     name: str
 
+    model_config = {"extra": "allow"}
+
 @router.get("/test")
-async def test_adspower():
+async def test_adspower() -> Dict[str, Any]:
     service = AdsPowerService()
     is_connected = await service.check_connection()
     
@@ -20,9 +22,9 @@ async def test_adspower():
     }
 
 @router.post("/create-profile")
-async def create_profile(profile_data: ProfileCreate):
+async def create_profile(profile_data: ProfileCreate) -> Dict[str, Any]:
     service = AdsPowerService()
-    result = await service.create_profile(profile_data.dict())
+    result = await service.create_profile(profile_data.model_dump())
     
     if result["success"]:
         return result
@@ -30,7 +32,7 @@ async def create_profile(profile_data: ProfileCreate):
         raise HTTPException(status_code=400, detail=result["error"])
 
 @router.get("/profiles")
-async def get_profiles():
+async def get_profiles() -> Dict[str, Any]:
     service = AdsPowerService()
     profiles = await service.get_profiles()
     return {"success": True, "profiles": profiles, "count": len(profiles)}

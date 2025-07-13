@@ -1,6 +1,7 @@
-fastapi==0.104.1
-uvicorn[standard]==0.24.0
-pydantic==1.10.13
+fastapi==0.108.0
+uvicorn[standard]==0.25.0
+pydantic==2.6.0
+pydantic-settings==2.1.0
 python-multipart==0.0.6
 requests==2.31.0
 selenium==4.15.2
@@ -8,3 +9,4 @@ webdriver-manager==4.0.1
 python-dotenv==1.0.0
 aiofiles==23.2.1
 gunicorn==21.2.0
+typing-extensions==4.9.0

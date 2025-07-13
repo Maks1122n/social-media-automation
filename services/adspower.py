@@ -1,6 +1,7 @@
 import requests
 import logging
 from typing import Dict, List
+from pydantic import BaseModel
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)

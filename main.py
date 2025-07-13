@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 import os
 import uvicorn
+from typing import Dict, Any
 
 # Создаем приложение FastAPI
 app = FastAPI(
@@ -21,26 +22,30 @@ app.add_middleware(
 )
 
 # Создаем папки
-os.makedirs("../uploads", exist_ok=True)
-os.makedirs("../logs", exist_ok=True)
+os.makedirs("uploads", exist_ok=True)
+os.makedirs("logs", exist_ok=True)
 
 # Статические файлы
-app.mount("/uploads", StaticFiles(directory="../uploads"), name="uploads")
+app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 
-# Импорт роутеров
-from adspower_api import router as adspower_router
-app.include_router(adspower_router)
+# Импорт роутеров (если есть)
+try:
+    from adspower_api import router as adspower_router
+    app.include_router(adspower_router)
+except ImportError:
+    print("adspower_api не найден, пропускаем")
 
 @app.get("/")
-async def root():
+async def root() -> Dict[str, Any]:
     return {
         "message": "Social Media Automation API работает!",
         "version": "1.0.0",
-        "status": "🚀 Готов к работе!"
+        "status": "🚀 Готов к работе!",
+        "python_version": "3.13 compatible"
     }
 
 @app.get("/api/health")
-async def health_check():
+async def health_check() -> Dict[str, Any]:
     return {
         "status": "healthy",
         "message": "Все системы работают нормально ✅"
