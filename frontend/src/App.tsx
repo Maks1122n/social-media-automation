@@ -12,6 +12,7 @@ import {
   Instagram, Youtube, Hash, MessageSquare, Image, Music, Palette,
   Target, BarChart3, Timer, Shuffle, Camera, Folder, Link, MousePointer
 } from 'lucide-react';
+import { apiClient } from './config/api';
 
 // 🎨 СОВРЕМЕННАЯ ДИЗАЙН СИСТЕМА
 const theme = {
@@ -211,12 +212,112 @@ const SocialBotPlatform = () => {
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showAddProxyModal, setShowAddProxyModal] = useState(false);
   const [showPostingSettingsModal, setShowPostingSettingsModal] = useState(false);
+  
+  // 🔐 СОСТОЯНИЕ АУТЕНТИФИКАЦИИ
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [currentUser, setCurrentUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [accounts, setAccounts] = useState([]);
+  const [stats, setStats] = useState({
+    totalAccounts: 0,
+    activeAccounts: 0,
+    totalPosts: 0,
+    todayPosts: 0
+  });
   const [systemStatus, setSystemStatus] = useState({
     browserEngine: 'online',      // Скрыто: AdsPower
     analyticsEngine: 'syncing',   // Скрыто: LiveDune
     aiGenerator: 'online',        // Скрыто: GPT-4/Claude
     automationQueue: 12
   });
+
+  // 🔄 ПРОВЕРКА АУТЕНТИФИКАЦИИ ПРИ СТАРТЕ
+  useEffect(() => {
+    const token = localStorage.getItem('authToken');
+    if (token) {
+      setIsAuthenticated(true);
+      loadInitialData();
+    } else {
+      setLoading(false);
+    }
+  }, []);
+
+  // 📊 ЗАГРУЗКА ДАННЫХ ИЗ API
+  const loadInitialData = async () => {
+    if (!isAuthenticated) return;
+    
+    try {
+      setLoading(true);
+      
+      // Загружаем аккаунты из реального API
+      const accountsData = await apiClient.getAccounts();
+      setAccounts(accountsData.accounts || []);
+      
+      // Обновляем статистику
+      setStats(prev => ({
+        ...prev,
+        totalAccounts: accountsData.accounts?.length || 0,
+        activeAccounts: accountsData.accounts?.filter(acc => acc.status === 'ACTIVE').length || 0
+      }));
+      
+      // Проверяем здоровье сервисов
+      await checkServiceConnections();
+      
+    } catch (error) {
+      console.error('Failed to load initial data:', error);
+      alert('Ошибка загрузки данных: ' + error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // 🔍 ПРОВЕРКА ПОДКЛЮЧЕНИЯ К СЕРВИСАМ
+  const checkServiceConnections = async () => {
+    try {
+      await apiClient.healthCheck();
+      setSystemStatus(prev => ({
+        ...prev,
+        browserEngine: 'online',
+        analyticsEngine: 'online',
+        aiGenerator: 'online'
+      }));
+    } catch (error) {
+      console.error('Service health check failed:', error);
+      setSystemStatus(prev => ({
+        ...prev,
+        browserEngine: 'offline',
+        analyticsEngine: 'offline',
+        aiGenerator: 'offline'
+      }));
+    }
+  };
+
+  // 📝 СОЗДАНИЕ АККАУНТА ЧЕРЕЗ API
+  const handleBulkCreateAccounts = async (accountData) => {
+    try {
+      setLoading(true);
+      const result = await apiClient.createAccount({
+        username: accountData.username,
+        platform: accountData.platform.toUpperCase(),
+        password: accountData.password,
+        proxy: accountData.proxy,
+        postsPerDay: accountData.postsPerDay,
+        intervalHours: accountData.intervalHours
+      });
+      
+      if (result.account) {
+        // Перезагружаем список аккаунтов
+        await loadInitialData();
+        alert(`✅ Аккаунт ${result.account.username} успешно создан!`);
+        return true;
+      }
+    } catch (error) {
+      alert('❌ Ошибка создания аккаунта: ' + error.message);
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // Симуляция реального времени
   useEffect(() => {
@@ -242,83 +343,167 @@ const SocialBotPlatform = () => {
   }, [showUserMenu]);
 
   // 🔹 МОДАЛЬНОЕ ОКНО ДОБАВЛЕНИЯ АККАУНТА (WHITE LABEL)
-  const AddAccountModal = () => (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <Card className="w-full max-w-2xl max-h-[90vh] overflow-y-auto" glass>
-        <div className="p-6">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-2xl font-bold text-white">Добавить аккаунт</h2>
-            <button 
-              onClick={() => setShowAddAccountModal(false)}
-              className="p-2 hover:bg-slate-700 rounded-lg transition-colors"
-            >
-              <X className="w-5 h-5 text-slate-400" />
-            </button>
-          </div>
-          
-          <div className="space-y-6">
-            <div>
-              <label className="block text-sm font-medium text-slate-200 mb-2">Платформа</label>
-              <div className="grid grid-cols-2 gap-4">
-                <button className="p-4 border-2 border-pink-500 bg-pink-500/10 rounded-xl flex items-center gap-3 hover:bg-pink-500/20 transition-colors">
-                  <Instagram className="w-6 h-6 text-pink-500" />
-                  <span className="text-white font-medium">Instagram</span>
-                </button>
-                <button className="p-4 border-2 border-slate-600 hover:border-red-500 bg-slate-800 rounded-xl flex items-center gap-3 hover:bg-red-500/10 transition-colors">
-                  <Youtube className="w-6 h-6 text-red-500" />
-                  <span className="text-white font-medium">YouTube</span>
-                </button>
+  const AddAccountModal = () => {
+    const [formData, setFormData] = useState({
+      platform: 'INSTAGRAM',
+      username: '',
+      password: '',
+      proxy: '',
+      postsPerDay: 3,
+      intervalHours: 4
+    });
+    const [loading, setLoading] = useState(false);
+
+    const handleSubmit = async () => {
+      if (!formData.username || !formData.password) {
+        alert('❌ Заполните обязательные поля');
+        return;
+      }
+
+      try {
+        setLoading(true);
+        const success = await handleBulkCreateAccounts(formData);
+        if (success) {
+          setShowAddAccountModal(false);
+          setFormData({
+            platform: 'INSTAGRAM',
+            username: '',
+            password: '',
+            proxy: '',
+            postsPerDay: 3,
+            intervalHours: 4
+          });
+        }
+      } catch (error) {
+        console.error('Submit error:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    return (
+      <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+        <Card className="w-full max-w-2xl max-h-[90vh] overflow-y-auto" glass>
+          <div className="p-6">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-2xl font-bold text-white">Добавить аккаунт</h2>
+              <button 
+                onClick={() => setShowAddAccountModal(false)}
+                className="p-2 hover:bg-slate-700 rounded-lg transition-colors"
+              >
+                <X className="w-5 h-5 text-slate-400" />
+              </button>
+            </div>
+            
+            <div className="space-y-6">
+              <div>
+                <label className="block text-sm font-medium text-slate-200 mb-2">Платформа</label>
+                <div className="grid grid-cols-2 gap-4">
+                  <button 
+                    onClick={() => setFormData(prev => ({ ...prev, platform: 'INSTAGRAM' }))}
+                    className={`p-4 border-2 rounded-xl flex items-center gap-3 transition-colors ${
+                      formData.platform === 'INSTAGRAM' 
+                        ? 'border-pink-500 bg-pink-500/10' 
+                        : 'border-slate-600 bg-slate-800 hover:border-pink-500'
+                    }`}
+                  >
+                    <Instagram className="w-6 h-6 text-pink-500" />
+                    <span className="text-white font-medium">Instagram</span>
+                  </button>
+                  <button 
+                    onClick={() => setFormData(prev => ({ ...prev, platform: 'YOUTUBE' }))}
+                    className={`p-4 border-2 rounded-xl flex items-center gap-3 transition-colors ${
+                      formData.platform === 'YOUTUBE' 
+                        ? 'border-red-500 bg-red-500/10' 
+                        : 'border-slate-600 bg-slate-800 hover:border-red-500'
+                    }`}
+                  >
+                    <Youtube className="w-6 h-6 text-red-500" />
+                    <span className="text-white font-medium">YouTube</span>
+                  </button>
+                </div>
               </div>
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium text-slate-200 mb-2">Имя пользователя</label>
-              <input 
-                type="text" 
-                placeholder="username_example"
-                className="w-full px-4 py-3 bg-slate-800 border border-slate-600 rounded-xl text-white placeholder-slate-400 focus:border-blue-500 focus:outline-none"
-              />
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium text-slate-200 mb-2">Пароль</label>
-              <input 
-                type="password" 
-                placeholder="Введите пароль"
-                className="w-full px-4 py-3 bg-slate-800 border border-slate-600 rounded-xl text-white placeholder-slate-400 focus:border-blue-500 focus:outline-none"
-              />
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium text-slate-200 mb-2">Прокси (опционально)</label>
-              <div className="flex gap-2">
+              
+              <div>
+                <label className="block text-sm font-medium text-slate-200 mb-2">Имя пользователя *</label>
                 <input 
                   type="text" 
-                  placeholder="IP:PORT:LOGIN:PASSWORD"
-                  className="flex-1 px-4 py-3 bg-slate-800 border border-slate-600 rounded-xl text-white placeholder-slate-400 focus:border-blue-500 focus:outline-none"
+                  value={formData.username}
+                  onChange={(e) => setFormData(prev => ({ ...prev, username: e.target.value }))}
+                  placeholder="username_example"
+                  className="w-full px-4 py-3 bg-slate-800 border border-slate-600 rounded-xl text-white placeholder-slate-400 focus:border-blue-500 focus:outline-none"
+                  required
                 />
-                <Button variant="outline" onClick={() => setShowAddProxyModal(true)}>
-                  Выбрать прокси
-                </Button>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-slate-200 mb-2">Пароль *</label>
+                <input 
+                  type="password" 
+                  value={formData.password}
+                  onChange={(e) => setFormData(prev => ({ ...prev, password: e.target.value }))}
+                  placeholder="Введите пароль"
+                  className="w-full px-4 py-3 bg-slate-800 border border-slate-600 rounded-xl text-white placeholder-slate-400 focus:border-blue-500 focus:outline-none"
+                  required
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-slate-200 mb-2">Прокси (опционально)</label>
+                <input 
+                  type="text" 
+                  value={formData.proxy}
+                  onChange={(e) => setFormData(prev => ({ ...prev, proxy: e.target.value }))}
+                  placeholder="IP:PORT:LOGIN:PASSWORD"
+                  className="w-full px-4 py-3 bg-slate-800 border border-slate-600 rounded-xl text-white placeholder-slate-400 focus:border-blue-500 focus:outline-none"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-slate-200 mb-2">Постов в день</label>
+                  <input 
+                    type="number" 
+                    value={formData.postsPerDay}
+                    onChange={(e) => setFormData(prev => ({ ...prev, postsPerDay: parseInt(e.target.value) || 3 }))}
+                    min="1"
+                    max="10"
+                    className="w-full px-4 py-3 bg-slate-800 border border-slate-600 rounded-xl text-white focus:border-blue-500 focus:outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-slate-200 mb-2">Интервал (часы)</label>
+                  <input 
+                    type="number" 
+                    value={formData.intervalHours}
+                    onChange={(e) => setFormData(prev => ({ ...prev, intervalHours: parseInt(e.target.value) || 4 }))}
+                    min="1"
+                    max="24"
+                    className="w-full px-4 py-3 bg-slate-800 border border-slate-600 rounded-xl text-white focus:border-blue-500 focus:outline-none"
+                  />
+                </div>
               </div>
             </div>
+            
+            <div className="flex gap-3 mt-8">
+              <Button variant="outline" className="flex-1" onClick={() => setShowAddAccountModal(false)}>
+                Отмена
+              </Button>
+              <Button 
+                variant="primary" 
+                className="flex-1" 
+                onClick={handleSubmit}
+                loading={loading}
+                disabled={loading}
+              >
+                Создать аккаунт
+              </Button>
+            </div>
           </div>
-          
-          <div className="flex gap-3 mt-8">
-            <Button variant="outline" className="flex-1" onClick={() => setShowAddAccountModal(false)}>
-              Отмена
-            </Button>
-            <Button variant="primary" className="flex-1" onClick={() => {
-              alert('✅ Создание аккаунта и браузерного профиля через наш движок...');
-              setShowAddAccountModal(false);
-            }}>
-              Создать аккаунт
-            </Button>
-          </div>
-        </div>
-      </Card>
-    </div>
-  );
+        </Card>
+      </div>
+    );
+  };
 
   // 🔹 МОДАЛЬНОЕ ОКНО НАСТРОЕК ПОСТИНГА (WHITE LABEL)
   const PostingSettingsModal = () => (
@@ -683,7 +868,7 @@ const SocialBotPlatform = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <StatCard
           title="Всего аккаунтов"
-          value={mockData.stats.totalAccounts}
+          value={stats.totalAccounts}
           icon={Users}
           gradient="bg-gradient-to-br from-blue-500 to-blue-600"
           change="+12%"
@@ -692,7 +877,7 @@ const SocialBotPlatform = () => {
         />
         <StatCard
           title="Активно сейчас"
-          value={mockData.stats.activeAccounts}
+          value={stats.activeAccounts}
           icon={Activity}
           gradient="bg-gradient-to-br from-green-500 to-green-600"
           change="+5%"
@@ -700,7 +885,7 @@ const SocialBotPlatform = () => {
         />
         <StatCard
           title="Постов сегодня"
-          value={mockData.stats.todayPosts}
+          value={stats.todayPosts}
           icon={TrendingUp}
           gradient="bg-gradient-to-br from-purple-500 to-purple-600"
           change="+23%"
@@ -708,7 +893,7 @@ const SocialBotPlatform = () => {
         />
         <StatCard
           title="Общий охват"
-          value={`${(mockData.stats.totalReach / 1000000).toFixed(1)}M`}
+          value="0"
           icon={Eye}
           gradient="bg-gradient-to-br from-orange-500 to-orange-600"
           change="+8%"
@@ -888,9 +1073,20 @@ const SocialBotPlatform = () => {
 
       {/* Accounts Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {mockData.accounts.map(account => (
-          <AccountCard key={account.id} account={account} />
-        ))}
+        {accounts.length > 0 ? (
+          accounts.map(account => (
+            <AccountCard key={account.id} account={account} />
+          ))
+        ) : (
+          <div className="col-span-full text-center py-12">
+            <Users className="w-16 h-16 text-slate-600 mx-auto mb-4" />
+            <h3 className="text-xl font-semibold text-white mb-2">Нет аккаунтов</h3>
+            <p className="text-slate-400 mb-6">Добавьте свой первый аккаунт для начала работы</p>
+            <Button variant="primary" icon={Plus} onClick={() => setShowAddAccountModal(true)}>
+              Добавить первый аккаунт
+            </Button>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -1161,6 +1357,107 @@ const SocialBotPlatform = () => {
       </div>
     </div>
   );
+
+  // 🔐 КОМПОНЕНТ ВХОДА В СИСТЕМУ
+  const LoginPage = () => {
+    const [formData, setFormData] = useState({ email: '', password: '' });
+    const [isLogin, setIsLogin] = useState(true);
+    const [loading, setLoading] = useState(false);
+
+    const handleSubmit = async (e) => {
+      e.preventDefault();
+      setLoading(true);
+
+      try {
+        let result;
+        if (isLogin) {
+          result = await apiClient.login(formData.email, formData.password);
+        } else {
+          result = await apiClient.register(formData.email, formData.password);
+        }
+
+        setCurrentUser(result.user);
+        setIsAuthenticated(true);
+        alert(`✅ ${isLogin ? 'Вход' : 'Регистрация'} успешна!`);
+        await loadInitialData();
+      } catch (error) {
+        alert(`❌ Ошибка: ${error.message}`);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    return (
+      <div className="min-h-screen bg-slate-900 flex items-center justify-center p-4">
+        <Card className="w-full max-w-md p-8" glass>
+          <div className="text-center mb-8">
+            <div className="w-16 h-16 bg-gradient-to-br from-blue-600 to-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
+              <Activity className="w-8 h-8 text-white" />
+            </div>
+            <h1 className="text-2xl font-bold text-white">SocialBot</h1>
+            <p className="text-slate-400">{isLogin ? 'Вход в систему' : 'Создание аккаунта'}</p>
+          </div>
+
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-slate-200 mb-2">Email</label>
+              <input
+                type="email"
+                value={formData.email}
+                onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
+                className="w-full px-4 py-3 bg-slate-800 border border-slate-600 rounded-xl text-white placeholder-slate-400 focus:border-blue-500 focus:outline-none"
+                required
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-slate-200 mb-2">Пароль</label>
+              <input
+                type="password"
+                value={formData.password}
+                onChange={(e) => setFormData(prev => ({ ...prev, password: e.target.value }))}
+                className="w-full px-4 py-3 bg-slate-800 border border-slate-600 rounded-xl text-white placeholder-slate-400 focus:border-blue-500 focus:outline-none"
+                required
+              />
+            </div>
+
+            <Button
+              type="submit"
+              variant="primary"
+              className="w-full"
+              loading={loading}
+              disabled={loading}
+            >
+              {isLogin ? 'Войти' : 'Зарегистрироваться'}
+            </Button>
+          </form>
+
+          <div className="text-center mt-6">
+            <button
+              onClick={() => setIsLogin(!isLogin)}
+              className="text-blue-400 hover:text-blue-300 text-sm"
+            >
+              {isLogin ? 'Нет аккаунта? Зарегистрироваться' : 'Уже есть аккаунт? Войти'}
+            </button>
+          </div>
+        </Card>
+      </div>
+    );
+  };
+
+  // 🔄 ЗАГРУЗОЧНЫЙ ЭКРАН
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-slate-900 flex items-center justify-center">
+        <Loader className="w-8 h-8 text-blue-400 animate-spin" />
+      </div>
+    );
+  }
+
+  // 🔐 ЭКРАН ВХОДА
+  if (!isAuthenticated) {
+    return <LoginPage />;
+  }
 
   return (
     <div className="min-h-screen bg-slate-900 text-white flex">
