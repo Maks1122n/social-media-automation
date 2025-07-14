@@ -1,7 +1,7 @@
 const API_CONFIG = {
   BASE_URL: process.env.NODE_ENV === 'production' 
     ? 'https://socialbot-backend.onrender.com'
-    : 'http://localhost:3001',
+    : 'http://localhost:3000', // Backend работает на 3000, frontend на 3001
   
   ENDPOINTS: {
     // Auth
@@ -72,10 +72,14 @@ class ApiClient {
 
   // Auth methods
   async register(email, password) {
+    console.log('API: Registering user', { email });
+    
     const data = await this.request(API_CONFIG.ENDPOINTS.REGISTER, {
       method: 'POST',
       body: { email, password }
     });
+    
+    console.log('API: Register response', data);
     
     if (data.token) {
       this.setToken(data.token);
@@ -85,16 +89,25 @@ class ApiClient {
   }
 
   async login(email, password) {
+    console.log('API: Logging in user', { email });
+    
     const data = await this.request(API_CONFIG.ENDPOINTS.LOGIN, {
       method: 'POST',
       body: { email, password }
     });
+    
+    console.log('API: Login response', data);
     
     if (data.token) {
       this.setToken(data.token);
     }
     
     return data;
+  }
+
+  // Добавить метод logout
+  logout() {
+    this.removeToken();
   }
 
   // Accounts methods

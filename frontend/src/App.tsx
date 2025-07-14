@@ -205,42 +205,85 @@ const mockData = {
 
 // 🏠 ГЛАВНОЕ ПРИЛОЖЕНИЕ (WHITE LABEL)
 const SocialBotPlatform = () => {
+  // Основные состояния
   const [currentPage, setCurrentPage] = useState('dashboard');
   const [sidebarOpen, setSidebarOpen] = useState(true);
-  const [globalAutomation, setGlobalAutomation] = useState(true);
+  const [globalAutomation, setGlobalAutomation] = useState(false);
+  
+  // Аутентификация
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [currentUser, setCurrentUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+  
+  // Модальные окна
   const [showAddAccountModal, setShowAddAccountModal] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showAddProxyModal, setShowAddProxyModal] = useState(false);
   const [showPostingSettingsModal, setShowPostingSettingsModal] = useState(false);
+  const [showAdminPanel, setShowAdminPanel] = useState(false);
   
-  // 🔐 СОСТОЯНИЕ АУТЕНТИФИКАЦИИ
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [currentUser, setCurrentUser] = useState(null);
-  const [loading, setLoading] = useState(true);
+  // Данные состояния
   const [accounts, setAccounts] = useState([]);
+  const [videos, setVideos] = useState([]);
+  const [systemStatus, setSystemStatus] = useState({
+    adspowerConnected: false,
+    liveduneConnected: false,
+    aiServicesActive: false,
+    automationQueue: 0
+  });
   const [stats, setStats] = useState({
     totalAccounts: 0,
     activeAccounts: 0,
-    totalPosts: 0,
-    todayPosts: 0
-  });
-  const [systemStatus, setSystemStatus] = useState({
-    browserEngine: 'online',      // Скрыто: AdsPower
-    analyticsEngine: 'syncing',   // Скрыто: LiveDune
-    aiGenerator: 'online',        // Скрыто: GPT-4/Claude
-    automationQueue: 12
+    todayPosts: 0,
+    totalReach: 0
   });
 
-  // 🔄 ПРОВЕРКА АУТЕНТИФИКАЦИИ ПРИ СТАРТЕ
-  useEffect(() => {
+  // Функция выхода
+  const handleLogout = () => {
+    apiClient.logout();
+    setIsAuthenticated(false);
+    setCurrentUser(null);
+    setAccounts([]);
+    setVideos([]);
+    alert('Вы вышли из системы');
+  };
+
+  // Функция проверки токена
+  const checkAuthToken = async () => {
     const token = localStorage.getItem('authToken');
     if (token) {
-      setIsAuthenticated(true);
-      loadInitialData();
-    } else {
-      setLoading(false);
+      try {
+        // Можно добавить проверку токена через API
+        apiClient.setToken(token);
+        setIsAuthenticated(true);
+        // TODO: загрузить данные пользователя
+      } catch (error) {
+        console.error('Invalid token:', error);
+        apiClient.removeToken();
+        setIsAuthenticated(false);
+      }
     }
+    setLoading(false);
+  };
+
+  // Загрузка данных при старте
+  useEffect(() => {
+    checkAuthToken();
   }, []);
+
+  // Загрузка данных после аутентификации
+  useEffect(() => {
+    if (isAuthenticated) {
+      loadInitialData();
+      setupRealTimeUpdates();
+    }
+  }, [isAuthenticated]);
+
+  // Функция настройки реального времени (заглушка)
+  const setupRealTimeUpdates = () => {
+    // TODO: Добавить WebSocket или polling для обновлений в реальном времени
+    console.log('Setting up real-time updates...');
+  };
 
   // 📊 ЗАГРУЗКА ДАННЫХ ИЗ API
   const loadInitialData = async () => {
@@ -657,7 +700,10 @@ const SocialBotPlatform = () => {
           Резервные копии
         </button>
         <div className="border-t border-slate-700 my-2"></div>
-        <button className="w-full flex items-center gap-3 px-3 py-2 text-left text-red-400 hover:text-red-300 hover:bg-red-900/20 rounded-lg transition-colors">
+        <button 
+          onClick={handleLogout}
+          className="w-full flex items-center gap-3 px-3 py-2 text-left text-red-400 hover:text-red-300 hover:bg-red-900/20 rounded-lg transition-colors"
+        >
           <X className="w-4 h-4" />
           Выйти
         </button>
@@ -1366,25 +1412,59 @@ const SocialBotPlatform = () => {
 
     const handleSubmit = async (e) => {
       e.preventDefault();
+      
+      // Валидация
+      if (!formData.email || !formData.password) {
+        alert('Пожалуйста, заполните все поля');
+        return;
+      }
+
+      if (formData.password.length < 6) {
+        alert('Пароль должен быть не менее 6 символов');
+        return;
+      }
+
       setLoading(true);
 
       try {
         let result;
+        console.log('Отправляем запрос:', { isLogin, email: formData.email });
+        
         if (isLogin) {
           result = await apiClient.login(formData.email, formData.password);
+          console.log('Login result:', result);
         } else {
           result = await apiClient.register(formData.email, formData.password);
+          console.log('Register result:', result);
         }
 
-        setCurrentUser(result.user);
-        setIsAuthenticated(true);
-        alert(`✅ ${isLogin ? 'Вход' : 'Регистрация'} успешна!`);
-        await loadInitialData();
+        if (result.user && result.token) {
+          setCurrentUser(result.user);
+          setIsAuthenticated(true);
+          alert(`✅ ${isLogin ? 'Вход выполнен' : 'Регистрация прошла'} успешно!`);
+        } else {
+          throw new Error('Неверный ответ сервера');
+        }
+        
       } catch (error) {
-        alert(`❌ Ошибка: ${error.message}`);
+        console.error('Auth error:', error);
+        alert(`❌ Ошибка ${isLogin ? 'входа' : 'регистрации'}: ${error.message}`);
       } finally {
         setLoading(false);
       }
+    };
+
+    const handleInputChange = (field, value) => {
+      setFormData(prev => ({
+        ...prev,
+        [field]: value
+      }));
+    };
+
+    const toggleMode = () => {
+      setIsLogin(!isLogin);
+      // Очищаем форму при переключении
+      setFormData({ email: '', password: '' });
     };
 
     return (
@@ -1404,9 +1484,11 @@ const SocialBotPlatform = () => {
               <input
                 type="email"
                 value={formData.email}
-                onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
+                onChange={(e) => handleInputChange('email', e.target.value)}
+                placeholder="example@email.com"
                 className="w-full px-4 py-3 bg-slate-800 border border-slate-600 rounded-xl text-white placeholder-slate-400 focus:border-blue-500 focus:outline-none"
                 required
+                disabled={loading}
               />
             </div>
 
@@ -1415,9 +1497,12 @@ const SocialBotPlatform = () => {
               <input
                 type="password"
                 value={formData.password}
-                onChange={(e) => setFormData(prev => ({ ...prev, password: e.target.value }))}
+                onChange={(e) => handleInputChange('password', e.target.value)}
+                placeholder="Минимум 6 символов"
                 className="w-full px-4 py-3 bg-slate-800 border border-slate-600 rounded-xl text-white placeholder-slate-400 focus:border-blue-500 focus:outline-none"
                 required
+                disabled={loading}
+                minLength={6}
               />
             </div>
 
@@ -1426,20 +1511,31 @@ const SocialBotPlatform = () => {
               variant="primary"
               className="w-full"
               loading={loading}
-              disabled={loading}
+              disabled={loading || !formData.email || !formData.password}
             >
-              {isLogin ? 'Войти' : 'Зарегистрироваться'}
+              {loading ? 'Обработка...' : (isLogin ? 'Войти' : 'Зарегистрироваться')}
             </Button>
           </form>
 
           <div className="text-center mt-6">
             <button
-              onClick={() => setIsLogin(!isLogin)}
-              className="text-blue-400 hover:text-blue-300 text-sm"
+              type="button"
+              onClick={toggleMode}
+              disabled={loading}
+              className="text-blue-400 hover:text-blue-300 text-sm disabled:opacity-50"
             >
               {isLogin ? 'Нет аккаунта? Зарегистрироваться' : 'Уже есть аккаунт? Войти'}
             </button>
           </div>
+
+          {/* Debug информация в development */}
+          {process.env.NODE_ENV === 'development' && (
+            <div className="mt-4 p-3 bg-slate-800 rounded-lg text-xs text-slate-400">
+              <p>Debug: {isLogin ? 'Login mode' : 'Register mode'}</p>
+              <p>Backend: {apiClient.baseURL}</p>
+              <p>Form data: {JSON.stringify(formData)}</p>
+            </div>
+          )}
         </Card>
       </div>
     );
