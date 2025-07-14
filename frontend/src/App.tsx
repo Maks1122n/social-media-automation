@@ -13,6 +13,7 @@ import {
   Target, BarChart3, Timer, Shuffle, Camera, Folder, Link, MousePointer
 } from 'lucide-react';
 import { apiClient } from './config/api';
+import LoginForm from './LoginForm';
 
 // 🎨 СОВРЕМЕННАЯ ДИЗАЙН СИСТЕМА
 const theme = {
@@ -1552,7 +1553,11 @@ const SocialBotPlatform = () => {
 
   // 🔐 ЭКРАН ВХОДА
   if (!isAuthenticated) {
-    return <LoginPage />;
+    return <LoginForm onSuccess={(user) => {
+      console.log('Login success:', user);
+      setCurrentUser(user);
+      setIsAuthenticated(true);
+    }} />;
   }
 
   return (
