@@ -1,7 +1,5 @@
 const API_CONFIG = {
-  BASE_URL: process.env.NODE_ENV === 'production' 
-    ? 'https://socialbot-backend.onrender.com'
-    : 'http://localhost:3001',
+  BASE_URL: 'https://socialbot-backend.onrender.com',
   
   ENDPOINTS: {
     REGISTER: '/auth/register',
