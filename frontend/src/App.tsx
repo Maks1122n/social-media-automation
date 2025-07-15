@@ -6,6 +6,133 @@ import {
   ChevronRight, Zap, Clock, DollarSign
 } from 'lucide-react';
 
+// КОМПОНЕНТ АВТОРИЗАЦИИ
+const LoginRegisterForm = ({ onLogin, onDemoLogin, isMobile }) => {
+  const [isLogin, setIsLogin] = useState(true);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setError('');
+
+    try {
+      // Симуляция API вызова
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      if (isLogin) {
+        // Логика входа
+        onLogin({ email, name: email.split('@')[0] });
+      } else {
+        // Логика регистрации
+        onLogin({ email, name: email.split('@')[0] });
+      }
+    } catch (err) {
+      setError('Ошибка авторизации');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-slate-900 flex items-center justify-center p-4">
+      <div className={`bg-slate-800 rounded-2xl p-8 w-full ${isMobile ? 'max-w-sm' : 'max-w-md'} border border-slate-700`}>
+        {/* Логотип */}
+        <div className="text-center mb-8">
+          <div className="w-16 h-16 bg-gradient-to-br from-blue-600 to-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
+            <Activity className="w-8 h-8 text-white" />
+          </div>
+          <h1 className="text-2xl font-bold text-white mb-2">SocialBot</h1>
+          <p className="text-slate-400">Автоматизация социальных сетей</p>
+        </div>
+
+        {/* Переключатель Вход/Регистрация */}
+        <div className="flex bg-slate-700 rounded-xl p-1 mb-6">
+          <button
+            onClick={() => setIsLogin(true)}
+            className={`flex-1 py-3 px-4 rounded-lg font-medium transition-all ${
+              isLogin ? 'bg-blue-600 text-white' : 'text-slate-300 hover:text-white'
+            }`}
+          >
+            Вход
+          </button>
+          <button
+            onClick={() => setIsLogin(false)}
+            className={`flex-1 py-3 px-4 rounded-lg font-medium transition-all ${
+              !isLogin ? 'bg-blue-600 text-white' : 'text-slate-300 hover:text-white'
+            }`}
+          >
+            Регистрация
+          </button>
+        </div>
+
+        {/* Форма */}
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className="block text-white font-medium mb-2">Email</label>
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="admin@socialbot.com"
+              className="w-full p-4 bg-slate-700 border border-slate-600 rounded-xl text-white placeholder-slate-400 focus:border-blue-500 focus:outline-none"
+              required
+            />
+          </div>
+
+          <div>
+            <label className="block text-white font-medium mb-2">Пароль</label>
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="••••••••"
+              className="w-full p-4 bg-slate-700 border border-slate-600 rounded-xl text-white placeholder-slate-400 focus:border-blue-500 focus:outline-none"
+              required
+            />
+          </div>
+
+          {error && (
+            <div className="bg-red-900/50 border border-red-600 rounded-xl p-3">
+              <p className="text-red-400 text-sm">{error}</p>
+            </div>
+          )}
+
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white p-4 rounded-xl font-medium text-lg transition-all disabled:opacity-50 active:scale-95"
+          >
+            {loading ? 'Загрузка...' : (isLogin ? 'Войти' : 'Зарегистрироваться')}
+          </button>
+        </form>
+
+        {/* Разделитель */}
+        <div className="flex items-center my-6">
+          <div className="flex-1 h-px bg-slate-600"></div>
+          <span className="px-4 text-slate-400 text-sm">или</span>
+          <div className="flex-1 h-px bg-slate-600"></div>
+        </div>
+
+        {/* Демо вход */}
+        <button
+          onClick={onDemoLogin}
+          className="w-full bg-slate-700 hover:bg-slate-600 text-white p-4 rounded-xl font-medium text-lg transition-all border border-slate-600 active:scale-95"
+        >
+          🚀 Демо-просмотр
+        </button>
+
+        <p className="text-slate-400 text-sm text-center mt-4">
+          Демо-режим не требует регистрации
+        </p>
+      </div>
+    </div>
+  );
+};
+
 // МОБИЛЬНЫЕ КОМПОНЕНТЫ
 
 // Полноэкранный мобильный layout
@@ -655,7 +782,7 @@ const AddAccountModal = ({ onClose }) => {
   );
 };
 
-// DESKTOP КОМПОНЕНТЫ (упрощенные для экономии места)
+// DESKTOP КОМПОНЕНТЫ (полноценные)
 const DesktopLayout = ({ 
   currentPage, 
   setCurrentPage, 
@@ -685,11 +812,11 @@ const DesktopLayout = ({
           
           <nav className="space-y-2">
             {[
-              { id: 'dashboard', icon: BarChart3, label: 'Панель управления' },
-              { id: 'accounts', icon: Users, label: 'Аккаунты' },
-              { id: 'content', icon: Video, label: 'Контент' },
-              { id: 'analytics', icon: TrendingUp, label: 'Аналитика' },
-              { id: 'settings', icon: Settings, label: 'Настройки' }
+              { id: 'dashboard', icon: BarChart3, label: 'Панель управления', count: null },
+              { id: 'accounts', icon: Users, label: 'Аккаунты', count: 4 },
+              { id: 'content', icon: Video, label: 'Контент', count: 3 },
+              { id: 'analytics', icon: TrendingUp, label: 'Аналитика', badge: 'Pro' },
+              { id: 'settings', icon: Settings, label: 'Настройки', count: null }
             ].map((item) => (
               <button
                 key={item.id}
@@ -710,26 +837,52 @@ const DesktopLayout = ({
       <div className="flex-1 flex flex-col">
         <header className="bg-slate-800 border-b border-slate-700 px-6 py-4">
           <div className="flex items-center justify-between">
-            <h1 className="text-2xl font-bold text-white">Панель управления</h1>
+            <div>
+              <h1 className="text-2xl font-bold text-white">
+                {currentPage === 'dashboard' && 'Панель управления'}
+                {currentPage === 'accounts' && 'Управление аккаунтами'}
+                {currentPage === 'content' && 'Менеджер контента'}
+                {currentPage === 'analytics' && 'Аналитика'}
+                {currentPage === 'settings' && 'Настройки'}
+              </h1>
+              <p className="text-slate-400 mt-1">
+                {currentPage === 'dashboard' && 'Обзор статистики и быстрые действия'}
+                {currentPage === 'accounts' && 'Добавление и настройка социальных аккаунтов'}
+                {currentPage === 'content' && 'Загрузка и планирование публикаций'}
+                {currentPage === 'analytics' && 'Детальная статистика эффективности'}
+                {currentPage === 'settings' && 'Настройки системы и профиля'}
+              </p>
+            </div>
             <div className="flex items-center gap-4">
-              <button className="p-2 rounded-lg hover:bg-slate-700 text-slate-400">
+              <button className="p-2 rounded-lg hover:bg-slate-700 text-slate-400 relative">
                 <Bell className="w-5 h-5" />
+                <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full"></div>
               </button>
-              <button
-                onClick={handleLogout}
-                className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white font-semibold"
-              >
-                A
-              </button>
+              <div className="flex items-center gap-2">
+                <div className="text-right">
+                  <p className="text-white font-medium">{currentUser?.name || 'Администратор'}</p>
+                  <p className="text-slate-400 text-sm">{currentUser?.email}</p>
+                </div>
+                <button
+                  onClick={handleLogout}
+                  className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center text-white font-semibold hover:bg-blue-700 transition-colors"
+                >
+                  {currentUser?.name?.[0] || 'A'}
+                </button>
+              </div>
             </div>
           </div>
         </header>
 
-        <main className="flex-1 p-6">
-          {/* Desktop content here - simplified for space */}
-          <div className="text-center py-20">
-            <p className="text-slate-400 text-xl">Desktop версия (упрощена для экономии места)</p>
-          </div>
+        <main className="flex-1 p-6 overflow-auto">
+          <DesktopMainContent 
+            currentPage={currentPage}
+            stats={stats}
+            accounts={accounts}
+            globalAutomation={globalAutomation}
+            setGlobalAutomation={setGlobalAutomation}
+            setShowAddAccountModal={setShowAddAccountModal}
+          />
         </main>
       </div>
 
@@ -743,13 +896,216 @@ const DesktopLayout = ({
   );
 };
 
+// Desktop Main Content
+const DesktopMainContent = ({ 
+  currentPage, 
+  stats, 
+  accounts, 
+  globalAutomation, 
+  setGlobalAutomation, 
+  setShowAddAccountModal 
+}) => {
+  switch (currentPage) {
+    case 'dashboard':
+      return <DesktopDashboard stats={stats} accounts={accounts} setShowAddAccountModal={setShowAddAccountModal} />;
+    case 'accounts':
+      return <DesktopAccountsPage accounts={accounts} setShowAddAccountModal={setShowAddAccountModal} />;
+    case 'content':
+      return <DesktopContentPage />;
+    case 'analytics':
+      return <DesktopAnalyticsPage />;
+    case 'settings':
+      return <DesktopSettingsPage />;
+    default:
+      return <DesktopDashboard stats={stats} accounts={accounts} setShowAddAccountModal={setShowAddAccountModal} />;
+  }
+};
+
+// Desktop страницы
+const DesktopDashboard = ({ stats, accounts, setShowAddAccountModal }) => (
+  <div className="space-y-6">
+    {/* Статистика */}
+    <div className="grid grid-cols-4 gap-6">
+      {[
+        { title: 'Всего аккаунтов', value: stats.totalAccounts, change: '+12%', icon: Users, color: 'blue' },
+        { title: 'Активно сейчас', value: stats.activeAccounts, change: '+5%', icon: Activity, color: 'green' },
+        { title: 'Постов сегодня', value: stats.todayPosts, change: '+23%', icon: Video, color: 'purple' },
+        { title: 'Общий охват', value: stats.totalReach?.toLocaleString(), change: '+8%', icon: Eye, color: 'orange' }
+      ].map((card, index) => (
+        <div key={index} className="bg-slate-800 rounded-xl p-6 border border-slate-700">
+          <div className="flex items-center justify-between mb-4">
+            <div className={`w-12 h-12 bg-${card.color}-600 rounded-lg flex items-center justify-center`}>
+              <card.icon className="w-6 h-6 text-white" />
+            </div>
+            <span className="text-green-400 text-sm font-semibold">{card.change}</span>
+          </div>
+          <h3 className="text-2xl font-bold text-white mb-1">{card.value}</h3>
+          <p className="text-slate-400">{card.title}</p>
+        </div>
+      ))}
+    </div>
+
+    {/* Быстрые действия */}
+    <div className="grid grid-cols-3 gap-6">
+      <button
+        onClick={() => setShowAddAccountModal(true)}
+        className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white p-6 rounded-xl transition-all group"
+      >
+        <div className="flex items-center gap-4">
+          <div className="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center">
+            <Plus className="w-6 h-6" />
+          </div>
+          <div className="text-left">
+            <h3 className="font-bold text-lg">Добавить аккаунт</h3>
+            <p className="opacity-90">Новый социальный профиль</p>
+          </div>
+        </div>
+      </button>
+
+      <button className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white p-6 rounded-xl transition-all">
+        <div className="flex items-center gap-4">
+          <div className="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center">
+            <Upload className="w-6 h-6" />
+          </div>
+          <div className="text-left">
+            <h3 className="font-bold text-lg">Загрузить контент</h3>
+            <p className="opacity-90">Видео и изображения</p>
+          </div>
+        </div>
+      </button>
+
+      <button className="bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 text-white p-6 rounded-xl transition-all">
+        <div className="flex items-center gap-4">
+          <div className="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center">
+            <Target className="w-6 h-6" />
+          </div>
+          <div className="text-left">
+            <h3 className="font-bold text-lg">Настроить таргетинг</h3>
+            <p className="opacity-90">Аудитория и расписание</p>
+          </div>
+        </div>
+      </button>
+    </div>
+
+    {/* Недавние аккаунты */}
+    <div className="bg-slate-800 rounded-xl p-6 border border-slate-700">
+      <h3 className="text-xl font-bold text-white mb-4">Активные аккаунты</h3>
+      <div className="grid grid-cols-2 gap-4">
+        {accounts.slice(0, 4).map((account) => (
+          <div key={account.id} className="flex items-center gap-4 p-4 bg-slate-700 rounded-lg">
+            <div className={`w-12 h-12 rounded-lg flex items-center justify-center ${
+              account.platform === 'instagram' ? 'bg-gradient-to-r from-purple-600 to-pink-600' :
+              account.platform === 'youtube' ? 'bg-red-600' : 'bg-slate-600'
+            }`}>
+              {account.platform === 'instagram' && <Instagram className="w-6 h-6 text-white" />}
+              {account.platform === 'youtube' && <Youtube className="w-6 h-6 text-white" />}
+              {account.platform === 'tiktok' && <MessageCircle className="w-6 h-6 text-white" />}
+            </div>
+            <div className="flex-1">
+              <h4 className="text-white font-medium">{account.username}</h4>
+              <p className="text-slate-400 text-sm capitalize">{account.platform}</p>
+            </div>
+            <div className={`w-3 h-3 rounded-full ${
+              account.status === 'active' ? 'bg-green-400' : 'bg-red-400'
+            }`} />
+          </div>
+        ))}
+      </div>
+    </div>
+  </div>
+);
+
+const DesktopAccountsPage = ({ accounts, setShowAddAccountModal }) => (
+  <div className="space-y-6">
+    <div className="flex items-center justify-between">
+      <div>
+        <h2 className="text-2xl font-bold text-white">Социальные аккаунты</h2>
+        <p className="text-slate-400">Управление всеми подключенными профилями</p>
+      </div>
+      <button
+        onClick={() => setShowAddAccountModal(true)}
+        className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl flex items-center gap-2"
+      >
+        <Plus className="w-5 h-5" />
+        Добавить аккаунт
+      </button>
+    </div>
+
+    <div className="grid grid-cols-3 gap-6">
+      {accounts.map((account) => (
+        <div key={account.id} className="bg-slate-800 rounded-xl p-6 border border-slate-700">
+          <div className="flex items-center gap-4 mb-4">
+            <div className={`w-16 h-16 rounded-xl flex items-center justify-center ${
+              account.platform === 'instagram' ? 'bg-gradient-to-r from-purple-600 to-pink-600' :
+              account.platform === 'youtube' ? 'bg-red-600' : 'bg-slate-600'
+            }`}>
+              {account.platform === 'instagram' && <Instagram className="w-8 h-8 text-white" />}
+              {account.platform === 'youtube' && <Youtube className="w-8 h-8 text-white" />}
+              {account.platform === 'tiktok' && <MessageCircle className="w-8 h-8 text-white" />}
+            </div>
+            <div className="flex-1">
+              <h3 className="text-xl font-bold text-white">{account.username}</h3>
+              <p className="text-slate-400 capitalize">{account.platform}</p>
+            </div>
+          </div>
+          
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <span className="text-slate-400">Статус</span>
+              <div className="flex items-center gap-2">
+                <div className={`w-2 h-2 rounded-full ${
+                  account.status === 'active' ? 'bg-green-400' : 'bg-red-400'
+                }`} />
+                <span className="text-white capitalize">{account.status}</span>
+              </div>
+            </div>
+            
+            <div className="flex gap-2">
+              <button className="flex-1 bg-slate-700 hover:bg-slate-600 text-white py-2 px-4 rounded-lg text-sm">
+                Настроить
+              </button>
+              <button className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg text-sm">
+                Статистика
+              </button>
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+  </div>
+);
+
+const DesktopContentPage = () => (
+  <div className="text-center py-20">
+    <Video className="w-16 h-16 text-slate-400 mx-auto mb-4" />
+    <h2 className="text-2xl font-bold text-white mb-2">Менеджер контента</h2>
+    <p className="text-slate-400 text-lg">В разработке</p>
+  </div>
+);
+
+const DesktopAnalyticsPage = () => (
+  <div className="text-center py-20">
+    <TrendingUp className="w-16 h-16 text-slate-400 mx-auto mb-4" />
+    <h2 className="text-2xl font-bold text-white mb-2">Аналитика</h2>
+    <p className="text-slate-400 text-lg">В разработке</p>
+  </div>
+);
+
+const DesktopSettingsPage = () => (
+  <div className="text-center py-20">
+    <Settings className="w-16 h-16 text-slate-400 mx-auto mb-4" />
+    <h2 className="text-2xl font-bold text-white mb-2">Настройки</h2>
+    <p className="text-slate-400 text-lg">В разработке</p>
+  </div>
+);
+
 // ГЛАВНЫЙ КОМПОНЕНТ ПРИЛОЖЕНИЯ
 const SocialBotPlatform = () => {
   const [currentPage, setCurrentPage] = useState('dashboard');
   const [globalAutomation, setGlobalAutomation] = useState(false);
   const [showAddAccountModal, setShowAddAccountModal] = useState(false);
-  const [isAuthenticated, setIsAuthenticated] = useState(true);
-  const [currentUser, setCurrentUser] = useState({ email: 'admin@socialbot.com' });
+  const [isAuthenticated, setIsAuthenticated] = useState(false); // Изменил на false
+  const [currentUser, setCurrentUser] = useState(null);
 
   // Определяем мобильное устройство
   const [isMobile, setIsMobile] = useState(window.innerWidth < 1024);
@@ -783,21 +1139,19 @@ const SocialBotPlatform = () => {
     setCurrentUser(null);
   };
 
-  // Если пользователь не авторизован
+  const handleDemoLogin = () => {
+    setCurrentUser({ email: 'demo@socialbot.com', name: 'Демо пользователь' });
+    setIsAuthenticated(true);
+  };
+
+  const handleLogin = (userData) => {
+    setCurrentUser(userData);
+    setIsAuthenticated(true);
+  };
+
+  // Если пользователь не авторизован - показываем полную форму входа
   if (!isAuthenticated) {
-    return (
-      <div className="min-h-screen bg-slate-900 flex items-center justify-center p-4">
-        <div className="bg-slate-800 rounded-2xl p-8 w-full max-w-md">
-          <h1 className="text-2xl font-bold text-white mb-6 text-center">Вход в SocialBot</h1>
-          <button 
-            onClick={() => setIsAuthenticated(true)}
-            className="w-full bg-blue-600 text-white p-4 rounded-xl font-medium text-lg"
-          >
-            Демо вход
-          </button>
-        </div>
-      </div>
-    );
+    return <LoginRegisterForm onLogin={handleLogin} onDemoLogin={handleDemoLogin} isMobile={isMobile} />;
   }
 
   // Мобильная версия
