@@ -239,24 +239,45 @@ const SocialBotPlatform = () => {
     totalReach: 0
   });
 
-  // Функция выхода - ИСПРАВЛЕННАЯ ВЕРСИЯ
+  // Функция выхода - УЛУЧШЕННАЯ ВЕРСИЯ с полной очисткой
   const handleLogout = () => {
-    console.log('Logout clicked');
+    console.log('Logout process started');
     
-    // Очищаем все данные
-    localStorage.removeItem('authToken');
-    setIsAuthenticated(false);
-    setCurrentUser(null);
-    setAccounts([]);
-    setVideos([]);
-    setStats({
-      totalAccounts: 0,
-      activeAccounts: 0,
-      todayPosts: 0,
-      totalReach: 0
-    });
-    
-    alert('Вы успешно вышли из системы');
+    try {
+      // Очищаем ВСЕ данные localStorage
+      localStorage.clear();
+      
+      // Очищаем ВСЕ состояния приложения
+      setIsAuthenticated(false);
+      setCurrentUser(null);
+      setAccounts([]);
+      setVideos([]);
+      setStats({
+        totalAccounts: 0,
+        activeAccounts: 0,
+        todayPosts: 0,
+        totalReach: 0
+      });
+      setSystemStatus({
+        adspowerConnected: false,
+        liveduneConnected: false,
+        aiServicesActive: false,
+        automationQueue: 0
+      });
+      setLoading(false);
+      
+      // Принудительно перезагружаем страницу для полной очистки
+      setTimeout(() => {
+        window.location.reload();
+      }, 1000);
+      
+      alert('Вы успешно вышли из системы');
+      
+    } catch (error) {
+      console.error('Logout error:', error);
+      // В случае ошибки - принудительная перезагрузка
+      window.location.reload();
+    }
   };
 
   // Функция проверки токена

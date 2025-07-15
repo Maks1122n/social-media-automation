@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Activity } from 'lucide-react';
 
 const LoginForm = ({ onSuccess }) => {
@@ -6,15 +6,36 @@ const LoginForm = ({ onSuccess }) => {
   const [password, setPassword] = useState('');
   const [isLogin, setIsLogin] = useState(true);
   const [loading, setLoading] = useState(false);
+  const [slowConnection, setSlowConnection] = useState(false);
 
   console.log('LoginForm render:', { email, password, isLogin, loading });
 
+  // Проверяем доступность backend при загрузке
+  useEffect(() => {
+    const checkBackendHealth = async () => {
+      try {
+        const response = await fetch('https://socialbot-backend.onrender.com/health');
+        const data = await response.json();
+        console.log('Backend health:', data);
+        
+        if (!data.status === 'ok') {
+          console.warn('Backend may be sleeping, first request might be slow');
+        }
+      } catch (error) {
+        console.error('Backend health check failed:', error);
+      }
+    };
+    
+    checkBackendHealth();
+  }, []);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log('Form submit:', { email, password, isLogin });
+    
+    console.log('Form submit started:', { email, password: password.replace(/./g, '*'), isLogin });
     
     if (!email || !password) {
-      alert('Заполните все поля!');
+      alert('Пожалуйста, заполните все поля');
       return;
     }
 
@@ -22,33 +43,67 @@ const LoginForm = ({ onSuccess }) => {
       alert('Пароль должен быть не менее 6 символов');
       return;
     }
-    
+
     setLoading(true);
-    
+
+    // Таймер для медленного соединения
+    const slowConnectionTimer = setTimeout(() => {
+      if (loading) {
+        setSlowConnection(true);
+      }
+    }, 5000); // 5 секунд
+
     try {
-      const url = `https://socialbot-backend.onrender.com/auth/${isLogin ? 'login' : 'register'}`;
-      console.log('Making request to:', url);
+      console.log('Making API request...');
       
-      const response = await fetch(url, {
+      const response = await fetch(`https://socialbot-backend.onrender.com/auth/${isLogin ? 'login' : 'register'}`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
         body: JSON.stringify({ email, password })
       });
 
-      const result = await response.json();
-      console.log('API Response:', result);
+      console.log('Response status:', response.status);
       
-      if (response.ok && result.token) {
-        localStorage.setItem('authToken', result.token);
-        alert('✅ Успешно!');
-        onSuccess(result.user || { email, id: 1 });
-      } else {
-        throw new Error(result.error || 'Ошибка сервера');
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('API Error:', errorText);
+        throw new Error(`Ошибка сервера: ${response.status}`);
       }
+
+      const result = await response.json();
+      console.log('API Success:', result);
+
+      if (result.success && result.token) {
+        localStorage.setItem('authToken', result.token);
+        onSuccess(result.user || { email });
+        alert(`✅ ${isLogin ? 'Вход выполнен' : 'Регистрация прошла'} успешно!`);
+      } else {
+        throw new Error(result.error || 'Неверный ответ сервера');
+      }
+      
     } catch (error) {
       console.error('Auth error:', error);
-      alert('❌ Ошибка: ' + error.message);
+      
+      // Более детальные сообщения об ошибках
+      let errorMessage = 'Неизвестная ошибка';
+      
+      if (error.message.includes('Failed to fetch')) {
+        errorMessage = 'Проблема с подключением к серверу. Проверьте интернет.';
+      } else if (error.message.includes('500')) {
+        errorMessage = 'Внутренняя ошибка сервера. Попробуйте позже.';
+      } else if (error.message.includes('400')) {
+        errorMessage = 'Неверные данные. Проверьте email и пароль.';
+      } else {
+        errorMessage = error.message;
+      }
+      
+      alert(`❌ Ошибка ${isLogin ? 'входа' : 'регистрации'}: ${errorMessage}`);
     } finally {
+      clearTimeout(slowConnectionTimer);
+      setSlowConnection(false);
       setLoading(false);
     }
   };
@@ -62,7 +117,7 @@ const LoginForm = ({ onSuccess }) => {
 
   return (
     <div className="min-h-screen bg-slate-900 flex items-center justify-center p-4">
-      <div className="w-full max-w-md p-8 bg-slate-800 rounded-2xl border border-slate-700 shadow-xl">
+      <div className="w-full max-w-md p-6 sm:p-8 bg-white/10 backdrop-blur-lg border border-white/20 shadow-xl rounded-2xl">
         <div className="text-center mb-8">
           <div className="w-16 h-16 bg-gradient-to-br from-blue-600 to-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
             <Activity className="w-8 h-8 text-white" />
@@ -82,7 +137,7 @@ const LoginForm = ({ onSuccess }) => {
                 setEmail(e.target.value);
               }}
               placeholder="test@example.com"
-              className="w-full px-4 py-3 bg-slate-700 border border-slate-600 rounded-xl text-white placeholder-slate-400 focus:border-blue-500 focus:outline-none"
+              className="w-full px-4 py-3 bg-slate-800 border border-slate-600 rounded-xl text-white placeholder-slate-400 focus:border-blue-500 focus:outline-none text-base touch-manipulation"
               required
               disabled={loading}
             />
@@ -98,7 +153,7 @@ const LoginForm = ({ onSuccess }) => {
                 setPassword(e.target.value);
               }}
               placeholder="123456"
-              className="w-full px-4 py-3 bg-slate-700 border border-slate-600 rounded-xl text-white placeholder-slate-400 focus:border-blue-500 focus:outline-none"
+              className="w-full px-4 py-3 bg-slate-800 border border-slate-600 rounded-xl text-white placeholder-slate-400 focus:border-blue-500 focus:outline-none text-base touch-manipulation"
               required
               disabled={loading}
               minLength={6}
@@ -108,9 +163,13 @@ const LoginForm = ({ onSuccess }) => {
           <button
             type="submit"
             disabled={loading || !email || !password}
-            className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold py-3 px-4 rounded-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold py-3 px-4 rounded-xl transition-all duration-300 disabled:opacity-50 text-base sm:text-lg touch-manipulation disabled:cursor-not-allowed"
           >
-            {loading ? 'Обработка...' : (isLogin ? 'Войти' : 'Зарегистрироваться')}
+            {loading ? (
+              slowConnection ? 
+                'Сервер просыпается... Подождите' : 
+                'Обработка...'
+            ) : (isLogin ? 'Войти' : 'Зарегистрироваться')}
           </button>
         </form>
         
