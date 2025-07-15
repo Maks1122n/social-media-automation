@@ -5,6 +5,7 @@ import {
   Instagram, Youtube, MessageCircle, Calendar, Target,
   ChevronRight, Zap, Clock, DollarSign
 } from 'lucide-react';
+import LandingPage from './components/LandingPage';
 
 // КОМПОНЕНТ АВТОРИЗАЦИИ
 const LoginRegisterForm = ({ onLogin, onDemoLogin, isMobile }) => {
@@ -1147,6 +1148,25 @@ const DesktopSettingsPage = () => (
   </div>
 );
 
+// КОМПОНЕНТ ДЕМО-БАННЕРА
+const DemoBanner = ({ onExitDemo }) => {
+  return (
+    <div className="bg-gradient-to-r from-orange-600 to-red-600 text-white px-4 py-2 text-center relative">
+      <div className="flex items-center justify-center gap-2">
+        <Eye className="w-4 h-4" />
+        <span className="font-medium">Демо-режим</span>
+        <span className="hidden sm:inline">• Все данные для демонстрации</span>
+      </div>
+      <button
+        onClick={onExitDemo}
+        className="absolute right-4 top-1/2 transform -translate-y-1/2 text-white/80 hover:text-white text-sm underline"
+      >
+        Выйти из демо
+      </button>
+    </div>
+  );
+};
+
 // ГЛАВНЫЙ КОМПОНЕНТ ПРИЛОЖЕНИЯ
 const SocialBotPlatform = () => {
   const [currentPage, setCurrentPage] = useState('dashboard');
@@ -1154,6 +1174,15 @@ const SocialBotPlatform = () => {
   const [showAddAccountModal, setShowAddAccountModal] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false); // Изменил на false
   const [currentUser, setCurrentUser] = useState(null);
+  const [isDemoMode, setIsDemoMode] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [accounts, setAccounts] = useState([]);
+  const [stats, setStats] = useState({
+    totalAccounts: 4,
+    activeAccounts: 2,
+    todayPosts: 12,
+    totalReach: 15420
+  });
 
   // Определяем мобильное устройство
   const [isMobile, setIsMobile] = useState(window.innerWidth < 1024);
@@ -1167,24 +1196,102 @@ const SocialBotPlatform = () => {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  // Данные
-  const stats = {
-    totalAccounts: 4,
-    activeAccounts: 2,
-    todayPosts: 12,
-    totalReach: 15420
+  // Функция загрузки демо-данных
+  const loadDemoData = () => {
+    const demoAccounts = [
+      {
+        id: 1,
+        username: 'demo_instagram_fashion',
+        platform: 'INSTAGRAM',
+        status: 'ACTIVE',
+        postsPerDay: 4,
+        followers: 15420,
+        lastPost: '2 часа назад'
+      },
+      {
+        id: 2,
+        username: 'demo_youtube_tech',
+        platform: 'YOUTUBE', 
+        status: 'ACTIVE',
+        postsPerDay: 1,
+        followers: 8750,
+        lastPost: '1 день назад'
+      },
+      {
+        id: 3,
+        username: 'demo_tiktok_dance',
+        platform: 'TIKTOK',
+        status: 'PAUSED',
+        postsPerDay: 3,
+        followers: 25100,
+        lastPost: '3 дня назад'
+      },
+      {
+        id: 4,
+        username: 'demo_insta_food',
+        platform: 'INSTAGRAM',
+        status: 'ACTIVE',
+        postsPerDay: 2,
+        followers: 12800,
+        lastPost: '5 часов назад'
+      }
+    ];
+
+    setAccounts(demoAccounts);
+    setStats({
+      totalAccounts: demoAccounts.length,
+      activeAccounts: demoAccounts.filter(acc => acc.status === 'ACTIVE').length,
+      todayPosts: 28,
+      totalReach: 62070
+    });
   };
 
-  const accounts = [
-    { id: 1, platform: 'instagram', username: '@fashion_brand', status: 'active' },
-    { id: 2, platform: 'youtube', username: 'TechReview Channel', status: 'active' },
-    { id: 3, platform: 'tiktok', username: '@viral_content', status: 'paused' },
-    { id: 4, platform: 'instagram', username: '@lifestyle_blog', status: 'active' }
-  ];
+  // Функция для демо-режима
+  const handleDemoMode = () => {
+    setIsDemoMode(true);
+    setIsAuthenticated(true);
+    setCurrentUser({ 
+      email: 'demo@socialbot.com', 
+      name: 'Demo User',
+      plan: 'Demo' 
+    });
+    
+    loadDemoData();
+    
+    alert('🎉 Добро пожаловать в демо-режим SocialBot!\n\nВы можете изучить все функции платформы.\nДемо-данные обновляются каждые 24 часа.');
+  };
+
+  // Функция авторизации для LandingPage
+  const handleLandingAuth = async (email, password, isRegister) => {
+    try {
+      setLoading(true);
+      
+      // Симуляция API вызова
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      if (isRegister) {
+        // Логика регистрации
+        setCurrentUser({ email, name: email.split('@')[0], plan: 'Free Trial' });
+      } else {
+        // Логика входа
+        setCurrentUser({ email, name: email.split('@')[0], plan: 'Pro' });
+      }
+      
+      setIsAuthenticated(true);
+      setIsDemoMode(false);
+    } catch (error) {
+      console.error('Auth error:', error);
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleLogout = () => {
     setIsAuthenticated(false);
     setCurrentUser(null);
+    setIsDemoMode(false);
+    setAccounts([]);
   };
 
   const handleDemoLogin = () => {
@@ -1197,15 +1304,42 @@ const SocialBotPlatform = () => {
     setIsAuthenticated(true);
   };
 
-  // Если пользователь не авторизован - показываем полную форму входа
+  // Если пользователь не авторизован - показываем лендинг
   if (!isAuthenticated) {
-    return <LoginRegisterForm onLogin={handleLogin} onDemoLogin={handleDemoLogin} isMobile={isMobile} />;
+    return (
+      <LandingPage 
+        onLogin={handleLandingAuth}
+        onDemo={handleDemoMode}
+      />
+    );
   }
 
   // Мобильная версия
   if (isMobile) {
     return (
-      <MobileOptimizedLayout 
+      <div>
+        {isDemoMode && <DemoBanner onExitDemo={handleLogout} />}
+        <MobileOptimizedLayout 
+          currentPage={currentPage}
+          setCurrentPage={setCurrentPage}
+          globalAutomation={globalAutomation}
+          setGlobalAutomation={setGlobalAutomation}
+          showAddAccountModal={showAddAccountModal}
+          setShowAddAccountModal={setShowAddAccountModal}
+          accounts={accounts}
+          stats={stats}
+          currentUser={currentUser}
+          handleLogout={handleLogout}
+        />
+      </div>
+    );
+  }
+
+  // Desktop версия
+  return (
+    <div>
+      {isDemoMode && <DemoBanner onExitDemo={handleLogout} />}
+      <DesktopLayout 
         currentPage={currentPage}
         setCurrentPage={setCurrentPage}
         globalAutomation={globalAutomation}
@@ -1217,23 +1351,7 @@ const SocialBotPlatform = () => {
         currentUser={currentUser}
         handleLogout={handleLogout}
       />
-    );
-  }
-
-  // Desktop версия
-  return (
-    <DesktopLayout 
-      currentPage={currentPage}
-      setCurrentPage={setCurrentPage}
-      globalAutomation={globalAutomation}
-      setGlobalAutomation={setGlobalAutomation}
-      showAddAccountModal={showAddAccountModal}
-      setShowAddAccountModal={setShowAddAccountModal}
-      accounts={accounts}
-      stats={stats}
-      currentUser={currentUser}
-      handleLogout={handleLogout}
-    />
+    </div>
   );
 };
 
