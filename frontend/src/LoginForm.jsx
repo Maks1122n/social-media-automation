@@ -26,7 +26,7 @@ const LoginForm = ({ onSuccess }) => {
     setLoading(true);
     
     try {
-      const url = `http://localhost:3000/auth/${isLogin ? 'login' : 'register'}`;
+      const url = `https://socialbot-backend.onrender.com/auth/${isLogin ? 'login' : 'register'}`;
       console.log('Making request to:', url);
       
       const response = await fetch(url, {
@@ -132,8 +132,8 @@ const LoginForm = ({ onSuccess }) => {
           <p>Email: "<span className="text-green-400">{email}</span>"</p>
           <p>Password: "<span className="text-green-400">{password}</span>"</p>
           <p>Loading: <span className="text-yellow-400">{loading.toString()}</span></p>
-          <p>Backend: <span className="text-purple-400">http://localhost:3000</span></p>
-          <p>Frontend: <span className="text-purple-400">http://localhost:3002</span></p>
+          <p>Backend: <span className="text-purple-400">https://socialbot-backend.onrender.com</span></p>
+          <p>Frontend: <span className="text-purple-400">https://socialbot-frontend.onrender.com</span></p>
           <p>Timestamp: <span className="text-gray-400">{new Date().toLocaleTimeString()}</span></p>
         </div>
       </div>
