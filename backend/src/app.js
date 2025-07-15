@@ -1,41 +1,43 @@
-const express = require('express');
-const cors = require('cors');
-const helmet = require('helmet');
-const rateLimit = require('express-rate-limit');
 require('dotenv').config();
 
-const authRoutes = require('./routes/auth');
-const accountsRoutes = require('./routes/accounts');
-const videosRoutes = require('./routes/videos');
-const adspowerRoutes = require('./routes/adspower');
-const aiRoutes = require('./routes/ai');
-const analyticsRoutes = require('./routes/analytics');
+const express = require('express');
+const cors = require('cors');
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
+const { PrismaClient } = require('@prisma/client');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
+const prisma = new PrismaClient();
 
-// Security middleware
-app.use(helmet());
+// Middleware
+const allowedOrigins = process.env.CORS_ORIGINS 
+  ? process.env.CORS_ORIGINS.split(',')
+  : [
+      'http://localhost:3000', 
+      'http://localhost:3002',
+      'https://socialbot-frontend.onrender.com'
+    ];
+
 app.use(cors({
-  origin: process.env.NODE_ENV === 'production' 
-    ? ['https://socialbot-frontend.onrender.com'] 
-    : ['http://localhost:3000', 'http://localhost:5173'],
+  origin: function (origin, callback) {
+    // Разрешить запросы без origin (например, мобильные приложения)
+    if (!origin) return callback(null, true);
+    
+    if (allowedOrigins.indexOf(origin) !== -1 || process.env.NODE_ENV === 'development') {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   credentials: true
 }));
 
-// Rate limiting
-const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100 // limit each IP to 100 requests per windowMs
-});
-app.use(limiter);
+app.use(express.json());
 
-// Body parsing
-app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ extended: true }));
-
-// Health check
+// Health check (both paths for compatibility)
 app.get('/health', (req, res) => {
+  console.log('✅ Health check requested');
   res.json({ 
     status: 'ok', 
     timestamp: new Date().toISOString(),
@@ -43,32 +45,297 @@ app.get('/health', (req, res) => {
   });
 });
 
-// Routes
-app.use('/auth', authRoutes);
-app.use('/api/accounts', accountsRoutes);
-app.use('/api/videos', videosRoutes);
-app.use('/api/adspower', adspowerRoutes);
-app.use('/api/ai', aiRoutes);
-app.use('/api/analytics', analyticsRoutes);
-
-// 404 handler
-app.use('*', (req, res) => {
-  res.status(404).json({ error: 'Route not found' });
-});
-
-// Error handler
-app.use((err, req, res, next) => {
-  console.error(err.stack);
-  res.status(500).json({ 
-    error: 'Something went wrong!',
-    message: process.env.NODE_ENV === 'development' ? err.message : 'Internal server error'
+app.get('/api/health', (req, res) => {
+  console.log('✅ API Health check requested');
+  res.json({ 
+    status: 'ok', 
+    timestamp: new Date().toISOString(),
+    service: 'SocialBot Backend API'
   });
 });
 
-app.listen(PORT, () => {
-  console.log(`🚀 SocialBot Backend running on port ${PORT}`);
-  console.log(`🌍 Environment: ${process.env.NODE_ENV}`);
-  console.log(`📊 Health check: http://localhost:${PORT}/health`);
+// Register
+app.post('/auth/register', async (req, res) => {
+  console.log('📝 Registration request:', req.body);
+  
+  try {
+    const { email, password } = req.body;
+
+    if (!email || !password) {
+      return res.status(400).json({ 
+        error: 'Email and password required',
+        success: false 
+      });
+    }
+
+    if (password.length < 6) {
+      return res.status(400).json({ 
+        error: 'Password must be at least 6 characters',
+        success: false 
+      });
+    }
+
+    // Check if user exists
+    const existingUser = await prisma.user.findUnique({ 
+      where: { email } 
+    });
+    
+    if (existingUser) {
+      return res.status(400).json({ 
+        error: 'User already exists',
+        success: false 
+      });
+    }
+
+    // Hash password
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    // Create user
+    const user = await prisma.user.create({
+      data: {
+        email,
+        password: hashedPassword
+      }
+    });
+
+    // Generate token
+    const token = jwt.sign(
+      { userId: user.id },
+      process.env.JWT_SECRET || 'your-secret-key',
+      { expiresIn: '24h' }
+    );
+
+    console.log('✅ User created:', email);
+
+    res.status(201).json({
+      success: true,
+      message: 'User created successfully',
+      user: {
+        id: user.id,
+        email: user.email
+      },
+      token
+    });
+
+  } catch (error) {
+    console.error('❌ Registration error:', error);
+    res.status(500).json({ 
+      error: 'Server error',
+      success: false
+    });
+  }
 });
 
-module.exports = app; 
+// Login
+app.post('/auth/login', async (req, res) => {
+  console.log('🔐 Login request:', req.body);
+  
+  try {
+    const { email, password } = req.body;
+
+    if (!email || !password) {
+      return res.status(400).json({ 
+        error: 'Email and password required',
+        success: false 
+      });
+    }
+
+    // Find user
+    const user = await prisma.user.findUnique({ 
+      where: { email } 
+    });
+    
+    if (!user) {
+      return res.status(401).json({ 
+        error: 'Invalid credentials',
+        success: false 
+      });
+    }
+
+    // Check password
+    const isValid = await bcrypt.compare(password, user.password);
+    if (!isValid) {
+      return res.status(401).json({ 
+        error: 'Invalid credentials',
+        success: false 
+      });
+    }
+
+    // Generate token
+    const token = jwt.sign(
+      { userId: user.id },
+      process.env.JWT_SECRET || 'your-secret-key',
+      { expiresIn: '24h' }
+    );
+
+    console.log('✅ Login successful:', email);
+
+    res.json({
+      success: true,
+      message: 'Login successful',
+      user: {
+        id: user.id,
+        email: user.email
+      },
+      token
+    });
+
+  } catch (error) {
+    console.error('❌ Login error:', error);
+    res.status(500).json({ 
+      error: 'Server error',
+      success: false
+    });
+  }
+});
+
+// API routes with /api prefix for frontend compatibility
+app.post('/api/auth/register', async (req, res) => {
+  console.log('📝 API Registration request:', req.body);
+  
+  try {
+    const { email, password } = req.body;
+
+    if (!email || !password) {
+      return res.status(400).json({ 
+        error: 'Email and password required',
+        success: false 
+      });
+    }
+
+    if (password.length < 6) {
+      return res.status(400).json({ 
+        error: 'Password must be at least 6 characters',
+        success: false 
+      });
+    }
+
+    // Check if user exists
+    const existingUser = await prisma.user.findUnique({
+      where: { email }
+    });
+
+    if (existingUser) {
+      return res.status(409).json({ 
+        error: 'User already exists',
+        success: false
+      });
+    }
+
+    // Hash password
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    // Create user
+    const user = await prisma.user.create({
+      data: {
+        email,
+        password: hashedPassword
+      }
+    });
+
+    // Generate token
+    const token = jwt.sign(
+      { userId: user.id },
+      process.env.JWT_SECRET || 'your-secret-key',
+      { expiresIn: '24h' }
+    );
+
+    console.log('✅ API User created:', email);
+
+    res.status(201).json({
+      success: true,
+      message: 'User created successfully',
+      user: {
+        id: user.id,
+        email: user.email
+      },
+      token
+    });
+
+  } catch (error) {
+    console.error('❌ API Registration error:', error);
+    res.status(500).json({ 
+      error: 'Server error',
+      success: false
+    });
+  }
+});
+
+app.post('/api/auth/login', async (req, res) => {
+  console.log('🔐 API Login request:', req.body);
+  
+  try {
+    const { email, password } = req.body;
+
+    if (!email || !password) {
+      return res.status(400).json({ 
+        error: 'Email and password required',
+        success: false 
+      });
+    }
+
+    // Find user
+    const user = await prisma.user.findUnique({
+      where: { email }
+    });
+
+    if (!user) {
+      return res.status(401).json({ 
+        error: 'Invalid credentials',
+        success: false 
+      });
+    }
+
+    // Check password
+    const isValid = await bcrypt.compare(password, user.password);
+    if (!isValid) {
+      return res.status(401).json({ 
+        error: 'Invalid credentials',
+        success: false 
+      });
+    }
+
+    // Generate token
+    const token = jwt.sign(
+      { userId: user.id },
+      process.env.JWT_SECRET || 'your-secret-key',
+      { expiresIn: '24h' }
+    );
+
+    console.log('✅ API Login successful:', email);
+
+    res.json({
+      success: true,
+      message: 'Login successful',
+      user: {
+        id: user.id,
+        email: user.email
+      },
+      token
+    });
+
+  } catch (error) {
+    console.error('❌ API Login error:', error);
+    res.status(500).json({ 
+      error: 'Server error',
+      success: false
+    });
+  }
+});
+
+// 404 handler
+app.use('*', (req, res) => {
+  console.log('❓ Unknown route:', req.method, req.originalUrl);
+  res.status(404).json({ 
+    error: 'Route not found',
+    success: false
+  });
+});
+
+// Start server
+app.listen(PORT, () => {
+  console.log(`🚀 Backend running on http://localhost:${PORT}`);
+  console.log(`🏥 Health: http://localhost:${PORT}/health`);
+  console.log(`📝 Register: POST http://localhost:${PORT}/auth/register`);
+  console.log(`🔐 Login: POST http://localhost:${PORT}/auth/login`);
+}); 
