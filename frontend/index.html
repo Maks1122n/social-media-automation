@@ -1,19 +1,33 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="utf-8" />
-    <link rel="icon" href="/favicon.ico" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    
+    <!-- 📱 МОБИЛЬНЫЕ META ТЕГИ -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    
+    <!-- 🍎 iOS ОПТИМИЗАЦИИ -->
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="SocialBot" />
+    
+    <!-- 🤖 ANDROID ОПТИМИЗАЦИИ -->
+    <meta name="mobile-web-app-capable" content="yes" />
     <meta name="theme-color" content="#1e293b" />
-    <meta name="description" content="Social Media Automation Platform" />
-    <title>Social Media Automation</title>
-</head>
-<body>
-    <noscript>You need to enable JavaScript to run this app.</noscript>
+    <meta name="msapplication-navbutton-color" content="#1e293b" />
+    
+    <!-- 🎯 PWA ПОДДЕРЖКА -->
+    <meta name="application-name" content="SocialBot" />
+    <meta name="description" content="Профессиональная автоматизация социальных сетей" />
+    
+    <!-- 🚫 ОТКЛЮЧЕНИЕ АВТОЗАПОЛНЕНИЯ ДЛЯ ЛУЧШЕГО UX -->
+    <meta name="format-detection" content="telephone=no" />
+    
+    <title>SocialBot - Автоматизация социальных сетей</title>
+  </head>
+  <body>
     <div id="root"></div>
-    <script type="module" src="/src/index.tsx"></script>
-</body>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
 </html> 
