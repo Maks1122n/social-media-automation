@@ -810,10 +810,529 @@ const SocialBotPlatform = () => {
     );
   };
 
+  // 📱 АДАПТИВНОЕ МОДАЛЬНОЕ ОКНО
+  const ResponsiveModal = ({ isOpen, onClose, title, children }) => {
+    if (!isOpen) return null;
+
+    return (
+      <div className="fixed inset-0 z-50 overflow-y-auto">
+        {/* Overlay */}
+        <div 
+          className="fixed inset-0 bg-black/50 transition-opacity"
+          onClick={onClose}
+        />
+        
+        {/* Modal */}
+        <div className="flex min-h-full items-end sm:items-center justify-center p-0 sm:p-4">
+          <div className="relative w-full sm:max-w-lg bg-slate-800 border border-slate-700 rounded-t-2xl sm:rounded-2xl shadow-xl">
+            {/* Header */}
+            <div className="flex items-center justify-between p-4 sm:p-6 border-b border-slate-700">
+              <h3 className="text-lg sm:text-xl font-bold text-white">{title}</h3>
+              <button
+                onClick={onClose}
+                className="p-2 rounded-lg hover:bg-slate-700 text-slate-400"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            
+            {/* Content */}
+            <div className="p-4 sm:p-6 max-h-[calc(100vh-200px)] overflow-y-auto">
+              {children}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  // 📱 МОБИЛЬНАЯ ФОРМА ДОБАВЛЕНИЯ АККАУНТА
+  const AddAccountModal = ({ isOpen, onClose, onSubmit }) => {
+    const [formData, setFormData] = useState({
+      platform: 'instagram',
+      username: '',
+      password: '',
+      postsPerDay: 3
+    });
+
+    const handleSubmit = (e) => {
+      e.preventDefault();
+      onSubmit(formData);
+      onClose();
+      // Сброс формы
+      setFormData({
+        platform: 'instagram',
+        username: '',
+        password: '',
+        postsPerDay: 3
+      });
+    };
+
+    return (
+      <ResponsiveModal isOpen={isOpen} onClose={onClose} title="Добавить аккаунт">
+        <form onSubmit={handleSubmit} className="space-y-4">
+          {/* Платформа */}
+          <div>
+            <label className="block text-sm font-medium text-slate-200 mb-2">
+              Платформа
+            </label>
+            <div className="grid grid-cols-3 gap-2">
+              {['instagram', 'youtube', 'tiktok'].map((platform) => (
+                <button
+                  key={platform}
+                  type="button"
+                  onClick={() => setFormData(prev => ({ ...prev, platform }))}
+                  className={`p-3 rounded-xl border text-center transition-all touch-manipulation ${
+                    formData.platform === platform
+                      ? 'border-blue-500 bg-blue-500/20 text-blue-400'
+                      : 'border-slate-600 text-slate-400 hover:border-slate-500'
+                  }`}
+                >
+                  <div className="text-xs font-medium capitalize">{platform}</div>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Username */}
+          <div>
+            <label className="block text-sm font-medium text-slate-200 mb-2">
+              Имя пользователя
+            </label>
+            <input
+              type="text"
+              value={formData.username}
+              onChange={(e) => setFormData(prev => ({ ...prev, username: e.target.value }))}
+              className="w-full px-4 py-3 bg-slate-700 border border-slate-600 rounded-xl text-white placeholder-slate-400 focus:border-blue-500 focus:outline-none text-base touch-manipulation"
+              placeholder="your_username"
+              required
+            />
+          </div>
+
+          {/* Password */}
+          <div>
+            <label className="block text-sm font-medium text-slate-200 mb-2">
+              Пароль
+            </label>
+            <input
+              type="password"
+              value={formData.password}
+              onChange={(e) => setFormData(prev => ({ ...prev, password: e.target.value }))}
+              className="w-full px-4 py-3 bg-slate-700 border border-slate-600 rounded-xl text-white placeholder-slate-400 focus:border-blue-500 focus:outline-none text-base touch-manipulation"
+              placeholder="••••••••"
+              required
+            />
+          </div>
+
+          {/* Posts per day */}
+          <div>
+            <label className="block text-sm font-medium text-slate-200 mb-2">
+              Постов в день: {formData.postsPerDay}
+            </label>
+            <input
+              type="range"
+              min="1"
+              max="10"
+              value={formData.postsPerDay}
+              onChange={(e) => setFormData(prev => ({ ...prev, postsPerDay: parseInt(e.target.value) }))}
+              className="w-full h-2 bg-slate-600 rounded-lg appearance-none cursor-pointer slider touch-manipulation"
+            />
+            <div className="flex justify-between text-xs text-slate-400 mt-1">
+              <span>1</span>
+              <span>10</span>
+            </div>
+          </div>
+
+          {/* Buttons */}
+          <div className="flex gap-3 pt-4">
+            <button
+              type="button"
+              onClick={onClose}
+              className="flex-1 px-4 py-3 bg-slate-700 hover:bg-slate-600 text-white rounded-xl transition-colors font-medium touch-manipulation"
+            >
+              Отмена
+            </button>
+            <button
+              type="submit"
+              className="flex-1 px-4 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl transition-colors font-medium touch-manipulation"
+            >
+              Создать
+            </button>
+          </div>
+        </form>
+      </ResponsiveModal>
+    );
+  };
+
+  // 📱 МОБИЛЬНЫЕ КАРТОЧКИ АККАУНТОВ
+  const MobileAccountCard = ({ account, onStatusChange }) => {
+    const platformColors = {
+      INSTAGRAM: 'from-pink-600 to-purple-600',
+      YOUTUBE: 'from-red-600 to-red-700',
+      TIKTOK: 'from-black to-gray-800'
+    };
+
+    const statusColors = {
+      ACTIVE: 'text-green-400 bg-green-400/20',
+      PAUSED: 'text-yellow-400 bg-yellow-400/20',
+      ERROR: 'text-red-400 bg-red-400/20'
+    };
+
+    return (
+      <div className="bg-slate-800 rounded-xl border border-slate-700 p-4">
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center gap-3">
+            <div className={`w-10 h-10 bg-gradient-to-br ${platformColors[account.platform]} rounded-lg flex items-center justify-center`}>
+              <span className="text-white text-xs font-bold">
+                {account.platform.charAt(0)}
+              </span>
+            </div>
+            <div>
+              <h3 className="text-white font-medium text-sm">{account.username}</h3>
+              <p className="text-slate-400 text-xs">{account.platform}</p>
+            </div>
+          </div>
+          
+          <span className={`px-2 py-1 rounded-full text-xs font-medium ${statusColors[account.status]}`}>
+            {account.status === 'ACTIVE' ? 'Активен' : 
+             account.status === 'PAUSED' ? 'Пауза' : 'Ошибка'}
+          </span>
+        </div>
+
+        {/* Статистика */}
+        <div className="grid grid-cols-3 gap-3 mb-3">
+          <div className="text-center">
+            <div className="text-lg font-bold text-white">{account.followers || 0}</div>
+            <div className="text-xs text-slate-400">Подписчики</div>
+          </div>
+          <div className="text-center">
+            <div className="text-lg font-bold text-white">{account.postsPerDay}</div>
+            <div className="text-xs text-slate-400">Постов/день</div>
+          </div>
+          <div className="text-center">
+            <div className="text-lg font-bold text-white">2ч</div>
+            <div className="text-xs text-slate-400">Последний</div>
+          </div>
+        </div>
+
+        {/* Действия */}
+        <div className="flex gap-2">
+          <button
+            onClick={() => onStatusChange(account.id, account.status === 'ACTIVE' ? 'PAUSED' : 'ACTIVE')}
+            className={`flex-1 py-2 px-3 rounded-lg text-xs font-medium transition-colors touch-manipulation ${
+              account.status === 'ACTIVE'
+                ? 'bg-yellow-600 hover:bg-yellow-700 text-white'
+                : 'bg-green-600 hover:bg-green-700 text-white'
+            }`}
+          >
+            {account.status === 'ACTIVE' ? 'Пауза' : 'Запустить'}
+          </button>
+          <button className="px-3 py-2 bg-slate-700 hover:bg-slate-600 text-slate-300 rounded-lg transition-colors touch-manipulation">
+            <Settings className="w-4 h-4" />
+          </button>
+        </div>
+      </div>
+    );
+  };
+
+  // 📱 АДАПТИВНЫЕ КНОПКИ БЫСТРЫХ ДЕЙСТВИЙ
+  const QuickActions = ({ onAddAccount, onUploadContent, onStartAutomation }) => {
+    const actions = [
+      {
+        title: 'Запустить автопостинг',
+        subtitle: 'Активировать все аккаунты',
+        icon: Play,
+        onClick: onStartAutomation,
+        color: 'from-blue-600 to-purple-600',
+        primary: true
+      },
+      {
+        title: 'Добавить аккаунт',
+        subtitle: 'Новый социальный профиль',
+        icon: Plus,
+        onClick: onAddAccount,
+        color: 'from-green-600 to-emerald-600'
+      },
+      {
+        title: 'Загрузить контент',
+        subtitle: 'Видео и изображения',
+        icon: Upload,
+        onClick: onUploadContent,
+        color: 'from-orange-600 to-red-600'
+      }
+    ];
+
+    return (
+      <div className="grid gap-3 sm:gap-4">
+        {/* Главная кнопка - на всю ширину */}
+        <button
+          onClick={actions[0].onClick}
+          className={`w-full bg-gradient-to-r ${actions[0].color} hover:scale-[1.02] active:scale-[0.98] text-white p-4 lg:p-6 rounded-xl lg:rounded-2xl transition-all shadow-lg touch-manipulation`}
+        >
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 lg:w-14 lg:h-14 bg-white/20 rounded-xl flex items-center justify-center">
+              <actions[0].icon className="w-6 h-6 lg:w-7 lg:h-7" />
+            </div>
+            <div className="text-left">
+              <div className="font-bold text-base lg:text-lg">{actions[0].title}</div>
+              <div className="text-sm lg:text-base opacity-90">{actions[0].subtitle}</div>
+            </div>
+          </div>
+        </button>
+
+        {/* Второстепенные кнопки */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+          {actions.slice(1).map((action, index) => (
+            <button
+              key={index}
+              onClick={action.onClick}
+              className={`bg-gradient-to-r ${action.color} hover:scale-[1.02] active:scale-[0.98] text-white p-4 rounded-xl transition-all touch-manipulation`}
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
+                  <action.icon className="w-5 h-5" />
+                </div>
+                <div className="text-left">
+                  <div className="font-medium text-sm">{action.title}</div>
+                  <div className="text-xs opacity-80">{action.subtitle}</div>
+                </div>
+              </div>
+            </button>
+          ))}
+        </div>
+      </div>
+    );
+  };
+
+  // 📱 СПИСОК АККАУНТОВ
+  const AccountsList = ({ accounts, onStatusChange }) => {
+    return (
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <h2 className="text-lg lg:text-xl font-bold text-white">Аккаунты</h2>
+          <button className="lg:hidden bg-blue-600 hover:bg-blue-700 text-white p-2 rounded-lg touch-manipulation">
+            <Plus className="w-5 h-5" />
+          </button>
+        </div>
+        
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
+          {accounts.map((account) => (
+            <MobileAccountCard 
+              key={account.id} 
+              account={account} 
+              onStatusChange={onStatusChange}
+            />
+          ))}
+        </div>
+      </div>
+    );
+  };
+
+  // 📊 АДАПТИВНЫЕ КАРТОЧКИ СТАТИСТИКИ
+  const StatsGrid = ({ stats }) => {
+    const statsCards = [
+      {
+        title: 'Всего аккаунтов',
+        value: stats.totalAccounts,
+        change: '+12%',
+        icon: Users,
+        color: 'blue'
+      },
+      {
+        title: 'Активные',
+        value: stats.activeAccounts,
+        change: '+8%',
+        icon: Activity,
+        color: 'green'
+      },
+      {
+        title: 'Постов сегодня',
+        value: stats.todayPosts,
+        change: '+24%',
+        icon: Video,
+        color: 'purple'
+      },
+      {
+        title: 'Общий охват',
+        value: stats.totalReach?.toLocaleString() || '0',
+        change: '+18%',
+        icon: Eye,
+        color: 'orange'
+      }
+    ];
+
+    const colorClasses = {
+      blue: 'from-blue-600 to-blue-700',
+      green: 'from-green-600 to-green-700',
+      purple: 'from-purple-600 to-purple-700',
+      orange: 'from-orange-600 to-orange-700'
+    };
+
+    return (
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-6 mb-6">
+        {statsCards.map((card, index) => (
+          <div
+            key={index}
+            className="bg-slate-800 rounded-xl lg:rounded-2xl p-4 lg:p-6 border border-slate-700"
+          >
+            <div className="flex items-center justify-between mb-3">
+              <div className={`w-10 h-10 lg:w-12 lg:h-12 bg-gradient-to-br ${colorClasses[card.color]} rounded-xl flex items-center justify-center`}>
+                <card.icon className="w-5 h-5 lg:w-6 lg:h-6 text-white" />
+              </div>
+              <span className="text-xs lg:text-sm text-green-400 font-medium">
+                {card.change}
+              </span>
+            </div>
+            
+            <div>
+              <p className="text-2xl lg:text-3xl font-bold text-white mb-1">
+                {card.value}
+              </p>
+              <p className="text-xs lg:text-sm text-slate-400">
+                {card.title}
+              </p>
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  };
+
+  // 📱 МОБИЛЬНЫЙ HEADER
+  const MobileHeader = ({ sidebarOpen, setSidebarOpen, currentUser, onLogout }) => {
+    return (
+      <header className="lg:hidden bg-slate-800 border-b border-slate-700 px-4 py-3">
+        <div className="flex items-center justify-between">
+          {/* Кнопка меню */}
+          <button
+            onClick={() => setSidebarOpen(!sidebarOpen)}
+            className="p-2 rounded-lg hover:bg-slate-700 text-white"
+          >
+            <Menu className="w-6 h-6" />
+          </button>
+
+          {/* Логотип */}
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
+              <Activity className="w-5 h-5 text-white" />
+            </div>
+            <span className="text-white font-bold">SocialBot</span>
+          </div>
+
+          {/* Пользователь */}
+          <UserMenu user={currentUser} onLogout={onLogout} />
+        </div>
+      </header>
+    );
+  };
+
+  // 📱 АДАПТИВНОЕ БОКОВОЕ МЕНЮ (MOBILE-FIRST)
+  const AdaptiveSidebar = ({ currentPage, setCurrentPage, sidebarOpen, setSidebarOpen }) => {
+    const menuItems = [
+      { id: 'dashboard', icon: BarChart3, label: 'Центр управления', count: null },
+      { id: 'accounts', icon: Users, label: 'Аккаунты', count: accounts.length },
+      { id: 'content', icon: Video, label: 'Контент', count: 3 },
+      { id: 'analytics', icon: BarChart3, label: 'Аналитика', badge: 'Pro' },
+      { id: 'settings', icon: Settings, label: 'Настройки', count: null }
+    ];
+
+    return (
+      <>
+        {/* Мобильный overlay */}
+        {sidebarOpen && (
+          <div 
+            className="fixed inset-0 bg-black/50 z-40 lg:hidden"
+            onClick={() => setSidebarOpen(false)}
+          />
+        )}
+
+        {/* Sidebar */}
+        <div className={`
+          fixed lg:static inset-y-0 left-0 z-50
+          w-72 lg:w-64 xl:w-72
+          bg-slate-800 border-r border-slate-700
+          transform transition-transform duration-300 ease-in-out
+          ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
+        `}>
+          {/* Header */}
+          <div className="flex items-center justify-between p-4 lg:p-6 border-b border-slate-700">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-purple-600 rounded-xl flex items-center justify-center">
+                <Activity className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <h1 className="text-lg font-bold text-white">SocialBot</h1>
+                <p className="text-xs text-slate-400">Автоматизация</p>
+              </div>
+            </div>
+            
+            {/* Мобильная кнопка закрытия */}
+            <button
+              onClick={() => setSidebarOpen(false)}
+              className="lg:hidden p-2 rounded-lg hover:bg-slate-700 text-slate-400"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+
+          {/* Навигация */}
+          <nav className="p-4 space-y-2">
+            {menuItems.map((item) => (
+              <button
+                key={item.id}
+                onClick={() => {
+                  setCurrentPage(item.id);
+                  setSidebarOpen(false); // Закрываем меню на мобильном
+                }}
+                className={`
+                  w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left transition-all
+                  ${currentPage === item.id 
+                    ? 'bg-blue-600 text-white shadow-lg' 
+                    : 'text-slate-300 hover:text-white hover:bg-slate-700'
+                  }
+                `}
+              >
+                <item.icon className="w-5 h-5 flex-shrink-0" />
+                <span className="font-medium">{item.label}</span>
+                
+                {item.count && (
+                  <span className="ml-auto bg-slate-600 text-xs px-2 py-1 rounded-full">
+                    {item.count}
+                  </span>
+                )}
+                
+                {item.badge && (
+                  <span className="ml-auto bg-purple-600 text-xs px-2 py-1 rounded-full font-semibold">
+                    {item.badge}
+                  </span>
+                )}
+              </button>
+            ))}
+          </nav>
+
+          {/* Автопостинг тумблер */}
+          <div className="p-4 border-t border-slate-700">
+            <div className="bg-slate-700 rounded-xl p-4">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-white font-medium">Автопостинг</span>
+                <div className={`w-12 h-6 rounded-full relative transition-colors ${globalAutomation ? 'bg-green-600' : 'bg-slate-600'}`}>
+                  <div className={`w-5 h-5 bg-white rounded-full absolute top-0.5 transition-transform ${globalAutomation ? 'right-0.5' : 'left-0.5'}`}></div>
+                </div>
+              </div>
+              <p className="text-xs text-slate-400">
+                {globalAutomation ? 'Активно • 5 в очереди' : 'Остановлено'}
+              </p>
+            </div>
+          </div>
+        </div>
+      </>
+    );
+  };
+
   const navigation = [
     { id: 'dashboard', name: 'Центр управления', icon: BarChart3, badge: null },
-    { id: 'accounts', name: 'Аккаунты', icon: Users, badge: mockData.accounts.length },
-    { id: 'content', name: 'Контент', icon: Video, badge: mockData.videos.length },
+    { id: 'accounts', name: 'Аккаунты', icon: Users, badge: accounts.length },
+    { id: 'content', name: 'Контент', icon: Video, badge: 3 },
     { id: 'automation', name: 'Автопостинг', icon: Zap, badge: globalAutomation ? 'Активен' : 'Остановлен' },
     { id: 'analytics', name: 'Аналитика', icon: TrendingUp, badge: 'Pro' },
     { id: 'settings', name: 'Настройки', icon: Settings, badge: null }
@@ -1658,135 +2177,70 @@ const SocialBotPlatform = () => {
     }} />;
   }
 
+  // 📱 Функция для изменения статуса аккаунта
+  const handleAccountStatusChange = (accountId, newStatus) => {
+    setAccounts(prev => prev.map(acc => 
+      acc.id === accountId ? { ...acc, status: newStatus } : acc
+    ));
+  };
+
   return (
-    <div className="min-h-screen bg-slate-900 text-white flex">
-      {/* Sidebar */}
-      <div className={`bg-slate-800 border-r border-slate-700 transition-all duration-300 ${
-        sidebarOpen ? 'w-64' : 'w-16'
-      } ${sidebarOpen ? 'block' : 'hidden lg:block'}`}>
-        <div className="p-6">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-purple-600 rounded-2xl flex items-center justify-center">
-              <Activity className="w-6 h-6 text-white" />
+    <div className="min-h-screen bg-slate-900">
+      {/* Мобильный header */}
+      <MobileHeader 
+        sidebarOpen={sidebarOpen}
+        setSidebarOpen={setSidebarOpen}
+        currentUser={currentUser}
+        onLogout={handleLogout}
+      />
+
+      <div className="flex">
+        {/* Адаптивное боковое меню */}
+        <AdaptiveSidebar
+          currentPage={currentPage}
+          setCurrentPage={setCurrentPage}
+          sidebarOpen={sidebarOpen}
+          setSidebarOpen={setSidebarOpen}
+        />
+
+        {/* Основной контент */}
+        <main className="flex-1 lg:ml-0 min-h-screen">
+          <div className="p-4 lg:p-6 xl:p-8">
+            {/* Статистика */}
+            <StatsGrid stats={stats} />
+
+            {/* Быстрые действия */}
+            <div className="mb-6">
+              <QuickActions
+                onAddAccount={() => setShowAddAccountModal(true)}
+                onUploadContent={() => alert('Загрузка контента (в разработке)')}
+                onStartAutomation={() => setGlobalAutomation(!globalAutomation)}
+              />
             </div>
-            {sidebarOpen && (
-              <div>
-                <h1 className="text-xl font-bold text-white">SocialBot</h1>
-                <p className="text-xs text-slate-400">Наша платформа</p>
-              </div>
+
+            {/* Контент страницы */}
+            {currentPage === 'dashboard' && <DashboardPage />}
+            {currentPage === 'accounts' && (
+              <AccountsList 
+                accounts={accounts}
+                onStatusChange={handleAccountStatusChange}
+              />
             )}
+            {currentPage === 'content' && <ContentPage />}
+            {currentPage === 'automation' && <AutomationPage />}
+            {currentPage === 'analytics' && <AnalyticsPage />}
+            {currentPage === 'settings' && <SettingsPage />}
           </div>
-        </div>
-
-        <nav className="mt-8">
-          {navigation.map((item) => (
-            <button
-              key={item.id}
-              onClick={() => setCurrentPage(item.id)}
-              className={`w-full flex items-center gap-3 px-6 py-3 text-left hover:bg-slate-700 transition-colors ${
-                currentPage === item.id ? 'bg-slate-700 text-blue-400 border-r-2 border-blue-400' : 'text-slate-300'
-              }`}
-            >
-              <item.icon className="w-5 h-5" />
-              {sidebarOpen && (
-                <>
-                  <span className="flex-1 font-medium">{item.name}</span>
-                  {item.badge && (
-                    <Badge variant="blue" className="text-xs">
-                      {item.badge}
-                    </Badge>
-                  )}
-                </>
-              )}
-            </button>
-          ))}
-        </nav>
-      </div>
-
-      {/* Main Content */}
-      <div className="flex-1 flex flex-col">
-        {/* Header (WHITE LABEL) */}
-        <header className="bg-slate-800 border-b border-slate-700 px-6 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <button
-                onClick={() => setSidebarOpen(!sidebarOpen)}
-                className="lg:hidden p-2 hover:bg-slate-700 rounded-lg transition-colors"
-              >
-                <Menu className="w-5 h-5" />
-              </button>
-              <div>
-                <h1 className="text-xl font-semibold text-white">
-                  {navigation.find(nav => nav.id === currentPage)?.name || 'SocialBot'}
-                </h1>
-                <p className="text-sm text-slate-400">Наша платформа автоматизации</p>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-4">
-              <div className="hidden md:flex items-center gap-2">
-                <div className={`w-3 h-3 rounded-full ${globalAutomation ? 'bg-green-500 animate-pulse' : 'bg-slate-500'}`} />
-                <span className="text-sm text-slate-300">
-                  {globalAutomation ? 'Наша система активна' : 'Система остановлена'}
-                </span>
-              </div>
-              
-              <button className="relative p-2 hover:bg-slate-700 rounded-lg transition-colors">
-                <Bell className="w-5 h-5 text-slate-400" />
-                <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full animate-pulse"></div>
-              </button>
-              
-              {/* Основной UserMenu */}
-              <UserMenu user={currentUser} onLogout={handleLogout} />
-              
-              {/* Запасная кнопка выхода */}
-              <button
-                onClick={handleLogout}
-                className="ml-2 px-3 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg flex items-center gap-2 transition-colors text-sm"
-                title="Выйти из системы"
-              >
-                <LogOut className="w-4 h-4" />
-                <span className="hidden sm:inline">Выйти</span>
-              </button>
-            </div>
-          </div>
-        </header>
-
-        {/* Main Content Area */}
-        <main className="flex-1 p-6 overflow-auto">
-          {currentPage === 'dashboard' && <DashboardPage />}
-          {currentPage === 'accounts' && <AccountsPage />}
-          {currentPage === 'content' && <ContentPage />}
-          {currentPage === 'automation' && <AutomationPage />}
-          {currentPage === 'analytics' && <AnalyticsPage />}
-          {currentPage === 'settings' && <SettingsPage />}
         </main>
-
-        {/* Модальные окна */}
-        {showAddAccountModal && <AddAccountModal />}
-        {showPostingSettingsModal && <PostingSettingsModal />}
-
-        {/* Footer (WHITE LABEL) */}
-        <footer className="bg-slate-800 border-t border-slate-700 px-6 py-3">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-6 text-xs text-slate-400">
-              <span>SocialBot Platform v2.0</span>
-              <span>•</span>
-              <div className="flex items-center gap-1">
-                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-                <span>Наши системы работают</span>
-              </div>
-              <span>•</span>
-              <span>Последнее обновление: сейчас</span>
-            </div>
-            <div className="flex items-center gap-4 text-xs text-slate-400">
-              <button className="hover:text-white transition-colors">Техподдержка</button>
-              <button className="hover:text-white transition-colors">Документация</button>
-              <button className="hover:text-white transition-colors">API</button>
-            </div>
-          </div>
-        </footer>
       </div>
+
+      {/* Модальные окна */}
+      <AddAccountModal
+        isOpen={showAddAccountModal}
+        onClose={() => setShowAddAccountModal(false)}
+        onSubmit={handleBulkCreateAccounts}
+      />
+      {showPostingSettingsModal && <PostingSettingsModal />}
     </div>
   );
 };
