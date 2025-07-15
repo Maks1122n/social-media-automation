@@ -4,7 +4,7 @@ import {
   LineChart, Line, AreaChart, Area, PieChart, Pie, Cell
 } from 'recharts';
 import { 
-  Activity, Users, Video, Zap, TrendingUp, Settings, Bell, Menu, X,
+  Activity, Users, Video, Zap, TrendingUp, Settings, Bell, Menu, X, LogOut,
   Play, Pause, Plus, Upload, Filter, Search, Eye, Edit, Trash2, Download,
   Globe, Shield, Brain, Cpu, Database, Monitor, Smartphone, RefreshCw,
   ChevronDown, ChevronRight, MoreHorizontal, Star, Heart, Share, Calendar,
@@ -705,8 +705,8 @@ const SocialBotPlatform = () => {
           onClick={handleLogout}
           className="w-full flex items-center gap-3 px-3 py-2 text-left text-red-400 hover:text-red-300 hover:bg-red-900/20 rounded-lg transition-colors"
         >
-          <X className="w-4 h-4" />
-          Выйти
+          <LogOut className="w-4 h-4" />
+          Выйти из системы
         </button>
       </div>
     </div>
