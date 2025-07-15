@@ -1,10 +1,11 @@
 const API_CONFIG = {
-  BASE_URL: 'https://socialbot-backend.onrender.com',
+  BASE_URL: 'https://socialbot-backend.onrender.com',  // Облачный backend сервер
   
   ENDPOINTS: {
     REGISTER: '/auth/register',
     LOGIN: '/auth/login',
     HEALTH: '/health',
+    ACCOUNTS: '/api/accounts',
     // API префиксы для совместимости
     API_REGISTER: '/api/auth/register',
     API_LOGIN: '/api/auth/login',
@@ -26,6 +27,21 @@ class ApiClient {
   removeToken() {
     this.token = null;
     localStorage.removeItem('authToken');
+  }
+
+  // MOCK METHOD для getAccounts
+  async getAccounts() {
+    console.log('🎯 MOCK: getAccounts called');
+    // Возвращаем mock данные вместо реального API вызова
+    return {
+      success: true,
+      data: [
+        { id: 1, platform: 'instagram', username: '@fashion_brand', status: 'active' },
+        { id: 2, platform: 'youtube', username: 'TechReview Channel', status: 'active' },
+        { id: 3, platform: 'tiktok', username: '@viral_content', status: 'paused' },
+        { id: 4, platform: 'instagram', username: '@lifestyle_blog', status: 'active' }
+      ]
+    };
   }
 
   async request(endpoint, options = {}) {
@@ -92,4 +108,8 @@ class ApiClient {
 
 // Export singleton instance
 export const apiClient = new ApiClient();
+
+// Создаем объект ra для совместимости с существующим кодом
+export const ra = new ApiClient();
+
 export default apiClient; 
