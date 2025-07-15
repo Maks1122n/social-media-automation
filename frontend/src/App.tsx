@@ -795,6 +795,20 @@ const DesktopLayout = ({
   currentUser,
   handleLogout 
 }) => {
+  const [showUserMenu, setShowUserMenu] = useState(false);
+  
+  // Закрытие меню при клике вне его области
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (showUserMenu && !event.target.closest('.user-menu-container')) {
+        setShowUserMenu(false);
+      }
+    };
+    
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [showUserMenu]);
+
   return (
     <div className="min-h-screen bg-slate-900 flex">
       {/* Desktop Sidebar */}
@@ -858,17 +872,51 @@ const DesktopLayout = ({
                 <Bell className="w-5 h-5" />
                 <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full"></div>
               </button>
-              <div className="flex items-center gap-2">
-                <div className="text-right">
-                  <p className="text-white font-medium">{currentUser?.name || 'Администратор'}</p>
-                  <p className="text-slate-400 text-sm">{currentUser?.email}</p>
+              <div className="relative user-menu-container">
+                <div className="flex items-center gap-2">
+                  <div className="text-right">
+                    <p className="text-white font-medium">{currentUser?.name || 'Администратор'}</p>
+                    <p className="text-slate-400 text-sm">{currentUser?.email}</p>
+                  </div>
+                  <button
+                    onClick={() => setShowUserMenu(!showUserMenu)}
+                    className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center text-white font-semibold hover:bg-blue-700 transition-colors"
+                  >
+                    {currentUser?.name?.[0] || 'A'}
+                  </button>
                 </div>
-                <button
-                  onClick={handleLogout}
-                  className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center text-white font-semibold hover:bg-blue-700 transition-colors"
-                >
-                  {currentUser?.name?.[0] || 'A'}
-                </button>
+                
+                {/* Desktop User Menu */}
+                {showUserMenu && (
+                  <div className="absolute right-0 top-full mt-2 w-48 bg-slate-800 border border-slate-700 rounded-lg shadow-xl z-50">
+                    <div className="p-3 border-b border-slate-700">
+                      <p className="text-white font-medium">{currentUser?.name || 'Администратор'}</p>
+                      <p className="text-slate-400 text-sm">{currentUser?.email}</p>
+                    </div>
+                    <div className="p-2">
+                      <button
+                        onClick={() => {
+                          setCurrentPage('settings');
+                          setShowUserMenu(false);
+                        }}
+                        className="w-full flex items-center gap-3 px-3 py-2 text-slate-300 hover:text-white hover:bg-slate-700 rounded-lg transition-colors"
+                      >
+                        <Settings className="w-4 h-4" />
+                        <span>Настройки</span>
+                      </button>
+                      <button
+                        onClick={() => {
+                          handleLogout();
+                          setShowUserMenu(false);
+                        }}
+                        className="w-full flex items-center gap-3 px-3 py-2 text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded-lg transition-colors"
+                      >
+                        <LogOut className="w-4 h-4" />
+                        <span>Выйти</span>
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           </div>
