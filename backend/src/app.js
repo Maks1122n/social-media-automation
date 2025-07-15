@@ -11,26 +11,18 @@ const PORT = process.env.PORT || 3001;
 const prisma = new PrismaClient();
 
 // Middleware
-const allowedOrigins = process.env.CORS_ORIGINS 
-  ? process.env.CORS_ORIGINS.split(',')
-  : [
-      'http://localhost:3000', 
-      'http://localhost:3002',
-      'https://socialbot-frontend.onrender.com'
-    ];
-
 app.use(cors({
-  origin: function (origin, callback) {
-    // Разрешить запросы без origin (например, мобильные приложения)
-    if (!origin) return callback(null, true);
-    
-    if (allowedOrigins.indexOf(origin) !== -1 || process.env.NODE_ENV === 'development') {
-      callback(null, true);
-    } else {
-      callback(new Error('Not allowed by CORS'));
-    }
-  },
-  credentials: true
+  origin: [
+    'http://localhost:3000', 
+    'http://localhost:3001',
+    'http://localhost:3002',
+    'https://socialbot-frontend.onrender.com',
+    'https://ocialbot-frontend.onrender.com'
+  ],
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  optionsSuccessStatus: 200
 }));
 
 app.use(express.json());
