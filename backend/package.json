@@ -4,12 +4,13 @@
   "description": "SocialBot Backend API",
   "main": "src/app.js",
   "scripts": {
-    "start": "node src/app.js",
+    "start": "node src/app-simple.js",
     "dev": "node src/app.js",
-    "build": "npx prisma generate && npx prisma db push",
-    "postinstall": "npx prisma generate",
+    "build": "echo 'No build needed for simplified version'",
+    "postinstall": "echo 'No postinstall needed for simplified version'",
     "db:generate": "npx prisma generate",
-    "db:push": "npx prisma db push"
+    "db:push": "npx prisma db push",
+    "start:full": "node src/app.js"
   },
   "dependencies": {
     "@prisma/client": "^5.7.0",
