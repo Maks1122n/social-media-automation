@@ -1,3 +1,4 @@
+// 🚀 FORCE DEPLOY - Updated UI with modern design and animations
 import React, { useState, useEffect } from 'react';
 import { 
   Settings as SettingsIcon, Save, Check, X, 
