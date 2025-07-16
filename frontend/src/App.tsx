@@ -6,6 +6,11 @@ import {
   ChevronRight, Zap, Clock, DollarSign
 } from 'lucide-react';
 import LandingPage from './components/LandingPage';
+import Dashboard from './components/Dashboard';
+import AccountsManager from './components/AccountsManager';
+import ContentManager from './components/ContentManager';
+import Analytics from './components/Analytics';
+import SettingsComponent from './components/Settings';
 
 // КОМПОНЕНТ АВТОРИЗАЦИИ
 const LoginRegisterForm = ({ onLogin, onDemoLogin, isMobile }) => {
@@ -358,13 +363,13 @@ const MobileMainContent = ({
         </div>
       );
     case 'accounts':
-      return <MobileAccountsList accounts={accounts} setShowAddAccountModal={setShowAddAccountModal} />;
+      return <AccountsManager />;
     case 'content':
-      return <MobileContentManager />;
+      return <ContentManager />;
     case 'analytics':
-      return <MobileAnalytics />;
+      return <Analytics />;
     case 'settings':
-      return <MobileSettings />;
+      return <SettingsComponent />;
     default:
       return <MobileStatsGrid stats={stats} />;
   }
@@ -613,71 +618,7 @@ const MobileRecentActivity = () => (
   </div>
 );
 
-const MobileAccountsList = ({ accounts, setShowAddAccountModal }) => (
-  <div className="p-4">
-    <div className="flex items-center justify-between mb-6">
-      <h2 className="text-2xl font-bold text-white">Аккаунты</h2>
-      <button
-        onClick={() => setShowAddAccountModal(true)}
-        className="bg-blue-600 text-white px-4 py-2 rounded-xl active:scale-95 transition-transform"
-      >
-        <Plus className="w-5 h-5" />
-      </button>
-    </div>
-    <div className="grid grid-cols-1 gap-4">
-      {accounts.map((account) => (
-        <div key={account.id} className="bg-slate-800 rounded-xl p-5 border border-slate-700">
-          <div className="flex items-center gap-4">
-            <div className={`w-16 h-16 ${account.platform === 'instagram' ? 'bg-gradient-to-r from-purple-600 to-pink-600' : account.platform === 'youtube' ? 'bg-red-600' : 'bg-slate-600'} rounded-xl flex items-center justify-center`}>
-              {account.platform === 'instagram' && <Instagram className="w-8 h-8 text-white" />}
-              {account.platform === 'youtube' && <Youtube className="w-8 h-8 text-white" />}
-              {account.platform === 'tiktok' && <MessageCircle className="w-8 h-8 text-white" />}
-            </div>
-            <div className="flex-1">
-              <h3 className="text-xl font-bold text-white">{account.username}</h3>
-              <p className="text-slate-400 capitalize">{account.platform}</p>
-              <div className="flex items-center gap-2 mt-2">
-                <div className={`w-3 h-3 rounded-full ${account.status === 'active' ? 'bg-green-400' : 'bg-red-400'}`} />
-                <span className="text-sm text-slate-400 capitalize">{account.status}</span>
-              </div>
-            </div>
-            <ChevronRight className="w-6 h-6 text-slate-400" />
-          </div>
-        </div>
-      ))}
-    </div>
-  </div>
-);
 
-const MobileContentManager = () => (
-  <div className="p-4">
-    <h2 className="text-2xl font-bold text-white mb-6">Контент</h2>
-    <div className="text-center py-20">
-      <Video className="w-16 h-16 text-slate-400 mx-auto mb-4" />
-      <p className="text-slate-400 text-lg">Менеджер контента в разработке</p>
-    </div>
-  </div>
-);
-
-const MobileAnalytics = () => (
-  <div className="p-4">
-    <h2 className="text-2xl font-bold text-white mb-6">Аналитика</h2>
-    <div className="text-center py-20">
-      <TrendingUp className="w-16 h-16 text-slate-400 mx-auto mb-4" />
-      <p className="text-slate-400 text-lg">Аналитика в разработке</p>
-    </div>
-  </div>
-);
-
-const MobileSettings = () => (
-  <div className="p-4">
-    <h2 className="text-2xl font-bold text-white mb-6">Настройки</h2>
-    <div className="text-center py-20">
-      <Settings className="w-16 h-16 text-slate-400 mx-auto mb-4" />
-      <p className="text-slate-400 text-lg">Настройки в разработке</p>
-    </div>
-  </div>
-);
 
 // Responsive модальное окно
 const ResponsiveModal = ({ children, onClose }) => {
@@ -975,17 +916,17 @@ const DesktopMainContent = ({
 }) => {
   switch (currentPage) {
     case 'dashboard':
-      return <DesktopDashboard stats={stats} accounts={accounts} setShowAddAccountModal={setShowAddAccountModal} />;
+      return <Dashboard />;
     case 'accounts':
-      return <DesktopAccountsPage accounts={accounts} setShowAddAccountModal={setShowAddAccountModal} />;
+      return <AccountsManager />;
     case 'content':
-      return <DesktopContentPage />;
+      return <ContentManager />;
     case 'analytics':
-      return <DesktopAnalyticsPage />;
+      return <Analytics />;
     case 'settings':
-      return <DesktopSettingsPage />;
+      return <SettingsComponent />;
     default:
-      return <DesktopDashboard stats={stats} accounts={accounts} setShowAddAccountModal={setShowAddAccountModal} />;
+      return <Dashboard />;
   }
 };
 
@@ -1083,89 +1024,7 @@ const DesktopDashboard = ({ stats, accounts, setShowAddAccountModal }) => (
   </div>
 );
 
-const DesktopAccountsPage = ({ accounts, setShowAddAccountModal }) => (
-  <div className="space-y-6">
-    <div className="flex items-center justify-between">
-      <div>
-        <h2 className="text-2xl font-bold text-white">Социальные аккаунты</h2>
-        <p className="text-slate-400">Управление всеми подключенными профилями</p>
-      </div>
-      <button
-        onClick={() => setShowAddAccountModal(true)}
-        className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl flex items-center gap-2"
-      >
-        <Plus className="w-5 h-5" />
-        Добавить аккаунт
-      </button>
-    </div>
 
-    <div className="grid grid-cols-3 gap-6">
-      {accounts.map((account) => (
-        <div key={account.id} className="bg-slate-800 rounded-xl p-6 border border-slate-700">
-          <div className="flex items-center gap-4 mb-4">
-            <div className={`w-16 h-16 rounded-xl flex items-center justify-center ${
-              account.platform === 'instagram' ? 'bg-gradient-to-r from-purple-600 to-pink-600' :
-              account.platform === 'youtube' ? 'bg-red-600' : 'bg-slate-600'
-            }`}>
-              {account.platform === 'instagram' && <Instagram className="w-8 h-8 text-white" />}
-              {account.platform === 'youtube' && <Youtube className="w-8 h-8 text-white" />}
-              {account.platform === 'tiktok' && <MessageCircle className="w-8 h-8 text-white" />}
-            </div>
-            <div className="flex-1">
-              <h3 className="text-xl font-bold text-white">{account.username}</h3>
-              <p className="text-slate-400 capitalize">{account.platform}</p>
-            </div>
-          </div>
-          
-          <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <span className="text-slate-400">Статус</span>
-              <div className="flex items-center gap-2">
-                <div className={`w-2 h-2 rounded-full ${
-                  account.status === 'active' ? 'bg-green-400' : 'bg-red-400'
-                }`} />
-                <span className="text-white capitalize">{account.status}</span>
-              </div>
-            </div>
-            
-            <div className="flex gap-2">
-              <button className="flex-1 bg-slate-700 hover:bg-slate-600 text-white py-2 px-4 rounded-lg text-sm">
-                Настроить
-              </button>
-              <button className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg text-sm">
-                Статистика
-              </button>
-            </div>
-          </div>
-        </div>
-      ))}
-    </div>
-  </div>
-);
-
-const DesktopContentPage = () => (
-  <div className="text-center py-20">
-    <Video className="w-16 h-16 text-slate-400 mx-auto mb-4" />
-    <h2 className="text-2xl font-bold text-white mb-2">Менеджер контента</h2>
-    <p className="text-slate-400 text-lg">В разработке</p>
-  </div>
-);
-
-const DesktopAnalyticsPage = () => (
-  <div className="text-center py-20">
-    <TrendingUp className="w-16 h-16 text-slate-400 mx-auto mb-4" />
-    <h2 className="text-2xl font-bold text-white mb-2">Аналитика</h2>
-    <p className="text-slate-400 text-lg">В разработке</p>
-  </div>
-);
-
-const DesktopSettingsPage = () => (
-  <div className="text-center py-20">
-    <Settings className="w-16 h-16 text-slate-400 mx-auto mb-4" />
-    <h2 className="text-2xl font-bold text-white mb-2">Настройки</h2>
-    <p className="text-slate-400 text-lg">В разработке</p>
-  </div>
-);
 
 // КОМПОНЕНТ ДЕМО-БАННЕРА
 const DemoBanner = ({ onExitDemo }) => {
