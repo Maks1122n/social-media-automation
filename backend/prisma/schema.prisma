@@ -3,15 +3,15 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider = "sqlite"
+  url      = "file:./dev.db"
 }
 
 model User {
   id        String   @id @default(cuid())
   email     String   @unique
   password  String
-  role      UserRole @default(USER)
+  role      String   @default("USER") // USER, ADMIN, PREMIUM, ENTERPRISE
   isActive  Boolean  @default(true)
   lastLogin DateTime?
   createdAt DateTime @default(now())
@@ -25,8 +25,6 @@ model User {
   videos    Video[]
   
   @@map("users")
-  @@index([email])
-  @@index([createdAt])
 }
 
 model UserProfile {
@@ -46,95 +44,85 @@ model UserProfile {
 }
 
 model Account {
-  id            String        @id @default(cuid())
+  id            String   @id @default(cuid())
   username      String
-  platform      Platform
-  status        AccountStatus @default(ACTIVE)
-  accessToken   String?       // Зашифрованный
-  refreshToken  String?       // Зашифрованный
-  postsPerDay   Int           @default(3)
-  intervalHours Int           @default(4)
+  platform      String   // INSTAGRAM, YOUTUBE, TIKTOK, TWITTER, FACEBOOK, LINKEDIN
+  status        String   @default("ACTIVE") // ACTIVE, PAUSED, ERROR, BANNED, PENDING
+  accessToken   String?  // Зашифрованный
+  refreshToken  String?  // Зашифрованный
+  postsPerDay   Int      @default(3)
+  intervalHours Int      @default(4)
   lastPost      DateTime?
-  followers     Int           @default(0)
-  following     Int           @default(0)
-  engagement    Float         @default(0.0)
-  isVerified    Boolean       @default(false)
-  createdAt     DateTime      @default(now())
-  updatedAt     DateTime      @updatedAt
+  followers     Int      @default(0)
+  following     Int      @default(0)
+  engagement    Float    @default(0.0)
+  isVerified    Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 
   // Связи
   userId        String
-  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   posts         Post[]
   analytics     AccountAnalytics[]
 
   @@map("accounts")
   @@unique([userId, platform, username])
-  @@index([userId])
-  @@index([platform])
-  @@index([status])
 }
 
 model Video {
-  id           String      @id @default(cuid())
+  id           String   @id @default(cuid())
   filename     String
   originalName String
   title        String?
   description  String?
-  tags         String[]
-  fileUrl      String      // S3 URL
-  thumbnailUrl String?     // S3 URL
-  duration     Int?        // Секунды
-  size         Int?        // Байты
-  format       String?     // mp4, mov, etc
-  resolution   String?     // 1920x1080
-  status       VideoStatus @default(UPLOADED)
-  aiGenerated  Boolean     @default(false)
-  createdAt    DateTime    @default(now())
-  updatedAt    DateTime    @updatedAt
+  tags         String?  // JSON string instead of array
+  fileUrl      String   // S3 URL
+  thumbnailUrl String?  // S3 URL
+  duration     Int?     // Секунды
+  size         Int?     // Байты
+  format       String?  // mp4, mov, etc
+  resolution   String?  // 1920x1080
+  status       String   @default("UPLOADED") // UPLOADED, PROCESSING, READY, ERROR, TRANSCODING
+  aiGenerated  Boolean  @default(false)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
   // Связи
   userId       String
-  user         User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   posts        Post[]
 
   @@map("videos")
-  @@index([userId])
-  @@index([status])
-  @@index([createdAt])
 }
 
 model Post {
-  id           String     @id @default(cuid())
+  id           String   @id @default(cuid())
   title        String?
   description  String?
-  hashtags     String[]
-  status       PostStatus @default(SCHEDULED)
+  hashtags     String?  // JSON string instead of array
+  status       String   @default("SCHEDULED") // SCHEDULED, PUBLISHING, PUBLISHED, FAILED, CANCELLED
   scheduledAt  DateTime
   publishedAt  DateTime?
-  externalId   String?    // ID в социальной сети
+  externalId   String?  // ID в социальной сети
   errorMessage String?
-  retryCount   Int        @default(0)
-  engagement   Json?      // Likes, comments, shares
-  createdAt    DateTime   @default(now())
-  updatedAt    DateTime   @updatedAt
+  retryCount   Int      @default(0)
+  engagement   String?  // JSON string for likes, comments, shares
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
   // Связи
   accountId    String
-  account      Account    @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  account      Account  @relation(fields: [accountId], references: [id], onDelete: Cascade)
   videoId      String?
-  video        Video?     @relation(fields: [videoId], references: [id], onDelete: SetNull)
+  video        Video?   @relation(fields: [videoId], references: [id], onDelete: SetNull)
 
   @@map("posts")
-  @@index([accountId])
-  @@index([status])
-  @@index([scheduledAt])
-  @@index([publishedAt])
 }
 
 model AccountAnalytics {
   id          String   @id @default(cuid())
-  date        DateTime @db.Date
+  date        DateTime
   followers   Int
   following   Int
   posts       Int
@@ -151,8 +139,6 @@ model AccountAnalytics {
 
   @@map("account_analytics")
   @@unique([accountId, date])
-  @@index([accountId])
-  @@index([date])
 }
 
 model SystemSetting {
@@ -165,8 +151,6 @@ model SystemSetting {
   updatedAt DateTime @updatedAt
   
   @@map("system_settings")
-  @@index([category])
-  @@index([key])
 }
 
 model AuditLog {
@@ -175,56 +159,11 @@ model AuditLog {
   action    String   // CREATE, UPDATE, DELETE
   resource  String   // USER, ACCOUNT, POST
   resourceId String?
-  oldData   Json?
-  newData   Json?
+  oldData   String?  // JSON string instead of Json type
+  newData   String?  // JSON string instead of Json type
   ipAddress String?
   userAgent String?
   createdAt DateTime @default(now())
 
   @@map("audit_logs")
-  @@index([userId])
-  @@index([action])
-  @@index([resource])
-  @@index([createdAt])
-}
-
-// Enums
-enum UserRole {
-  USER
-  ADMIN
-  PREMIUM
-  ENTERPRISE
-}
-
-enum Platform {
-  INSTAGRAM
-  YOUTUBE
-  TIKTOK
-  TWITTER
-  FACEBOOK
-  LINKEDIN
-}
-
-enum AccountStatus {
-  ACTIVE
-  PAUSED
-  ERROR
-  BANNED
-  PENDING
-}
-
-enum VideoStatus {
-  UPLOADED
-  PROCESSING
-  READY
-  ERROR
-  TRANSCODING
-}
-
-enum PostStatus {
-  SCHEDULED
-  PUBLISHING
-  PUBLISHED
-  FAILED
-  CANCELLED
 } 
