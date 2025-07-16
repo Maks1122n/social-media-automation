@@ -3,15 +3,31 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
-  url      = "file:./dev.db"
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  USER
+  ADMIN
+  PREMIUM
+  ENTERPRISE
+}
+
+enum Platform {
+  INSTAGRAM
+  YOUTUBE
+  TIKTOK
+  TWITTER
+  FACEBOOK
+  LINKEDIN
 }
 
 model User {
   id        String   @id @default(cuid())
   email     String   @unique
   password  String
-  role      String   @default("USER") // USER, ADMIN, PREMIUM, ENTERPRISE
+  role      UserRole @default(USER)
   isActive  Boolean  @default(true)
   lastLogin DateTime?
   createdAt DateTime @default(now())
@@ -46,7 +62,7 @@ model UserProfile {
 model Account {
   id            String   @id @default(cuid())
   username      String
-  platform      String   // INSTAGRAM, YOUTUBE, TIKTOK, TWITTER, FACEBOOK, LINKEDIN
+  platform      Platform
   status        String   @default("ACTIVE") // ACTIVE, PAUSED, ERROR, BANNED, PENDING
   accessToken   String?  // Зашифрованный
   refreshToken  String?  // Зашифрованный
