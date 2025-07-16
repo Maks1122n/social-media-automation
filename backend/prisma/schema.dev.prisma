@@ -1,0 +1,174 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  role      String   @default("USER") // USER, ADMIN, PREMIUM, ENTERPRISE
+  isActive  Boolean  @default(true)
+  lastLogin DateTime?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Профиль пользователя
+  profile   UserProfile?
+  
+  // Связи
+  accounts  Account[]
+  videos    Video[]
+  
+  @@map("users")
+}
+
+model UserProfile {
+  id          String  @id @default(cuid())
+  firstName   String?
+  lastName    String?
+  company     String?
+  phone       String?
+  avatar      String? // S3 URL
+  timezone    String  @default("UTC")
+  language    String  @default("en")
+  
+  userId      String  @unique
+  user        User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@map("user_profiles")
+}
+
+model Account {
+  id            String   @id @default(cuid())
+  username      String
+  platform      String   // INSTAGRAM, YOUTUBE, TIKTOK, TWITTER, FACEBOOK, LINKEDIN
+  status        String   @default("ACTIVE") // ACTIVE, PAUSED, ERROR, BANNED, PENDING
+  accessToken   String?  // Зашифрованный
+  refreshToken  String?  // Зашифрованный
+  postsPerDay   Int      @default(3)
+  intervalHours Int      @default(4)
+  lastPost      DateTime?
+  nextPost      DateTime?
+  followerCount Int      @default(0)
+  
+  userId        String
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  // Связи
+  videos        Video[]
+  posts         Post[]
+  analytics     AccountAnalytics[]
+  
+  @@index([userId])
+  @@index([platform])
+  @@index([status])
+  @@map("accounts")
+}
+
+model Video {
+  id          String    @id @default(cuid())
+  title       String
+  description String?
+  filePath    String    // Путь к файлу на S3
+  thumbnail   String?   // Превью
+  duration    Int?      // Секунды
+  size        Int?      // Байты
+  status      String    @default("UPLOADED") // UPLOADED, PROCESSING, READY, ERROR
+  
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  
+  // Связи
+  posts       Post[]
+  
+  @@index([userId])
+  @@index([status])
+  @@map("videos")
+}
+
+model Post {
+  id          String    @id @default(cuid())
+  content     String?   // Текст поста
+  status      String    @default("DRAFT") // DRAFT, SCHEDULED, POSTED, FAILED
+  scheduledAt DateTime?
+  postedAt    DateTime?
+  
+  accountId   String
+  account     Account   @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  
+  videoId     String?
+  video       Video?    @relation(fields: [videoId], references: [id], onDelete: SetNull)
+  
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  
+  @@index([accountId])
+  @@index([status])
+  @@index([scheduledAt])
+  @@map("posts")
+}
+
+model AccountAnalytics {
+  id            String   @id @default(cuid())
+  followers     Int      @default(0)
+  following     Int      @default(0)
+  posts         Int      @default(0)
+  engagement    Float    @default(0.0) // %
+  reach         Int      @default(0)
+  impressions   Int      @default(0)
+  
+  accountId     String
+  account       Account  @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  
+  date          DateTime @default(now())
+  createdAt     DateTime @default(now())
+  
+  @@index([accountId])
+  @@index([date])
+  @@map("account_analytics")
+}
+
+model SystemSetting {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  value     String
+  category  String   @default("general")
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@index([category])
+  @@map("system_settings")
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  action    String   // CREATE, UPDATE, DELETE, LOGIN
+  entity    String   // USER, ACCOUNT, VIDEO, POST
+  entityId  String?
+  details   String?  // JSON string для SQLite
+  ipAddress String?
+  userAgent String?
+  
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  
+  createdAt DateTime @default(now())
+  
+  @@index([userId])
+  @@index([action])
+  @@index([entity])
+  @@index([createdAt])
+  @@map("audit_logs")
+} 
