@@ -21,18 +21,37 @@ const LoginRegisterForm = ({ onLogin, onDemoLogin, isMobile }) => {
     setError('');
 
     try {
-      // Симуляция API вызова
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      if (isLogin) {
-        // Логика входа
-        onLogin({ email, name: email.split('@')[0] });
+      // Реальный API вызов к backend
+      const endpoint = isLogin ? '/auth/login' : '/auth/register';
+      const response = await fetch(`https://socialbot-backend.onrender.com${endpoint}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password })
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.success) {
+        // Сохраняем токен
+        if (data.token) {
+          localStorage.setItem('authToken', data.token);
+        }
+        
+        // Авторизуем пользователя
+        onLogin({ 
+          email: data.user?.email || email, 
+          name: data.user?.name || email.split('@')[0],
+          id: data.user?.id
+        });
       } else {
-        // Логика регистрации
-        onLogin({ email, name: email.split('@')[0] });
+        // Показываем ошибку от сервера
+        setError(data.error || 'Неверный email или пароль');
       }
     } catch (err) {
-      setError('Ошибка авторизации');
+      console.error('Auth error:', err);
+      setError('Ошибка подключения к серверу');
     } finally {
       setLoading(false);
     }
@@ -1266,19 +1285,36 @@ const SocialBotPlatform = () => {
     try {
       setLoading(true);
       
-      // Симуляция API вызова
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      if (isRegister) {
-        // Логика регистрации
-        setCurrentUser({ email, name: email.split('@')[0], plan: 'Free Trial' });
+      // Реальный API вызов к backend
+      const endpoint = isRegister ? '/auth/register' : '/auth/login';
+      const response = await fetch(`https://socialbot-backend.onrender.com${endpoint}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password })
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.success) {
+        // Сохраняем токен
+        if (data.token) {
+          localStorage.setItem('authToken', data.token);
+        }
+        
+        // Устанавливаем пользователя
+        setCurrentUser({ 
+          email: data.user?.email || email, 
+          name: data.user?.name || email.split('@')[0], 
+          plan: 'Pro',
+          id: data.user?.id
+        });
+        setIsAuthenticated(true);
+        setIsDemoMode(false);
       } else {
-        // Логика входа
-        setCurrentUser({ email, name: email.split('@')[0], plan: 'Pro' });
+        throw new Error(data.error || 'Неверный email или пароль');
       }
-      
-      setIsAuthenticated(true);
-      setIsDemoMode(false);
     } catch (error) {
       console.error('Auth error:', error);
       throw error;
